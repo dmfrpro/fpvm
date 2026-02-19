@@ -1,0 +1,7 @@
+(setq addOrSub
+      (lambda (p)
+              (cond (less p 0)
+                    plus
+                    minus)))
+
+((addOrSub -1) 3 4)

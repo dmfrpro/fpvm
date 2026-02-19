@@ -1,0 +1,4 @@
+(setq L '(1 2 3 4))
+(head L)
+(tail L)
+(cons 0 L)

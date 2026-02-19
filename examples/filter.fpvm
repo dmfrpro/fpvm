@@ -1,0 +1,17 @@
+(func apply1 (fn a)
+      (eval (cons fn (cons a null))))
+
+(func filter (pred xs)
+      (cond (isnull xs)
+            null
+            (cond (apply1 pred (head xs))
+                  (cons (head xs) (filter pred (tail xs)))
+                  (filter pred (tail xs))))
+)
+
+(func isPos (x) (greater x 0))
+
+(prog (xs result)
+      (setq xs (cons -2 (cons -1 (cons 0 (cons 1 (cons 2 (cons 3 null)))))))
+      (setq result (filter 'isPos xs)) # (1 2 3)
+      result)

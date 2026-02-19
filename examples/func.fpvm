@@ -1,0 +1,3 @@
+(func square (x) (times x x))
+
+(square 6)

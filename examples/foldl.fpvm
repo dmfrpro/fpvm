@@ -1,0 +1,15 @@
+(func apply2 (fn a b)
+      (eval (cons fn (cons a (cons b null)))))
+
+(func foldl (fn acc xs)
+      (cond (isnull xs)
+            acc
+            (foldl fn (apply2 fn acc (head xs)) (tail xs)))
+)
+
+(prog (xs sum prod)
+      (setq xs (cons 1 (cons 2 (cons 3 (cons 4 null)))))
+      (setq sum (foldl 'plus 0 xs))     # = 10
+      (setq prod (foldl 'times 1 xs))   # = 24
+      (cons sum (cons prod null))       # = null
+)

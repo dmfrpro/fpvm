@@ -1,0 +1,14 @@
+(func apply2 (fn a b)
+      (eval (cons fn (cons a (cons b null)))))
+
+(func foldr (fn acc xs)
+      (cond (isnull xs)
+            acc
+            (apply2 fn (head xs) (foldr fn acc (tail xs))))
+)
+
+(prog (xs result)
+      (setq xs (cons 1 (cons 2 (cons 3 (cons 4 null)))))
+      (setq result (foldr 'plus 0 xs))
+      result
+)

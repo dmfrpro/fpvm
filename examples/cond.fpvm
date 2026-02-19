@@ -1,0 +1,3 @@
+(cond (greater 5 3)
+      (plus 1 1)
+      (minus 5 1))

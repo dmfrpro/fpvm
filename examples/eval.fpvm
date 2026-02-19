@@ -1,0 +1,2 @@
+(setq expr '(plus 3 (times 2 4)))
+(eval expr)
