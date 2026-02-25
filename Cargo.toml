@@ -1,0 +1,14 @@
+[package]
+name = "fpvm"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "compier"
+path = "src/lib.rs"
+
+[[bin]]
+name = "lex_bin" 
+path = "src/bin/lex_bin.rs"
+
+[dependencies]
