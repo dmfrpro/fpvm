@@ -1,0 +1,70 @@
+# Add Integer division and remainder to std (intdiv, intrem)
+# divide always return real
+
+(func length (lst) '(
+        (func inner-length (lst res) (cond (isnull (head lst)) (res) (inner-length ((tail (lst)) (plus res 1))))) lst 0
+    )
+)
+
+(func isempty (lst) (isnull (head lst)))
+
+(
+    func take (n lst) (
+        cond (isempty lst) (lst) (
+            cond (equal n 0) (lst) (
+                cons (head lst) (take (minus n 1) (tail lst))
+            )
+        )
+    )
+)
+
+(
+    func drop (n lst) (
+        cond (isempty lst) (lst) (
+            cond (equal n 0) (lst) (
+                drop (minus n 1) (tail lst)
+            )
+        )
+    )
+)
+
+(
+    func merge (lhs rhs) (
+        cond (isempty lhs) (rhs) (
+            cond (isempty rhs) (lhs) (
+                (lambda (lhead ltail rhead rtail) (
+                        (
+                            cond (less lhead rhead)
+                                (cons lhead (merge ltail (cons rhead rtail)))
+                                (cons rhead (merge (cons lhead ltail) rtail))
+                        )
+                    )
+                ) ((head lhs) (tail lhs) (head rhs) (tail rhs))
+            )
+        )
+    )
+)
+
+(
+    func leftsplit (lst) (
+        take (intdiv (length lst) 2) lst
+    )
+)
+
+(
+    func rightsplit (lst) (
+        drop (intdiv (length lst) 2) lst
+    )
+)
+
+(
+    func mergesort (lst) (
+        cond (not (islist lst)) (null) (
+            cond (lesseq (length lst) 1) (lst) (
+                merge (mergesort (leftsplit lst)) (mergesort (rightsplit lst))
+            )
+        )
+    )
+)
+
+(mergesort (quote (1 4 1 6 7 5 15))) # '(1 1 4 5 6 7 15) 

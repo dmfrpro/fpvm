@@ -1,0 +1,1 @@
+'('(lambda (res) (res 1 5)) '(lambda (res) (res 3 1)) '(lambda (res) (res 2 1)) '(lambda (res) (res 4 1)) '(lambda (res) (res 5 1)))

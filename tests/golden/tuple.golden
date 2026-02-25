@@ -1,0 +1,6 @@
+1
+true
+1.4
+'(lambda (res) (res 1 2))
+1
+2

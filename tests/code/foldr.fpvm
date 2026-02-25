@@ -10,5 +10,5 @@
 (prog (xs result)
       (setq xs (cons 1 (cons 2 (cons 3 (cons 4 null)))))
       (setq result (foldr 'plus 0 xs))
-      result
+      (result result)
 )
