@@ -11,4 +11,8 @@ path = "src/lib.rs"
 name = "lex_bin" 
 path = "src/bin/lex_bin.rs"
 
+[[bin]]
+name = "lexi"
+path = "src/bin/lexi.rs"
+
 [dependencies]

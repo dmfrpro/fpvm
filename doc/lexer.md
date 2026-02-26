@@ -17,3 +17,10 @@ The "lex_bin" reads code from "stdin" and prints tokens stream into "stdout"
     # stdin from file
     cat examples/arithmetic.fpvm | cargo run --bin lex_bin
     ```
+
+3. Run lexi to parse input from stdin (interactive mode)
+
+    ```sh
+    # interactive binary
+    cargo run --bin lexi
+    ```
