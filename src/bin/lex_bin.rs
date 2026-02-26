@@ -1,26 +1,23 @@
 use std::io::{self, Read};
 
-use compier::lexer::{Lexer, TokenKind};
+use compier::lexer::{self, LexStep, Lexer, TokenKind};
 
 fn main() {
     let mut src = String::new();
     io::stdin().read_to_string(&mut src).unwrap();
 
-    let mut lx = Lexer::new(&src);
-    loop {
-        match lx.next_token() {
-            Ok(tok) => {
-                println!("{:?} {:?}", tok.kind, tok.span);
-                if matches!(tok.kind, TokenKind::Eof) {
-                    break;
-                }
-            }
-            Err(e) => {
-                eprintln!("Lex error: {:?} at {:?}", e.kind, e.span);
-                std::process::exit(1);
+    println!("src string: {}", src);
+    let mut lx = Lexer::new(src);
+
+    match lx.collect_tokens() {
+        Ok(tokens) => {
+            for tok in tokens {
+                println!("{:?} {:?}", tok.kind, tok.span)
             }
         }
-    }
 
-    println!("src string: {}",src)
+        Err(e) => {
+            eprintln!("lex error: {:?}", e)
+        }
+    }
 }

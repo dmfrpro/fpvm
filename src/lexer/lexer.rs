@@ -12,34 +12,77 @@ pub struct LexError {
     pub span: Span,
 }
 
-pub struct Lexer<'a> {
-    input: &'a str,
+#[derive(Debug)]
+pub enum LexStep {
+    Token(Token),
+    NeedMoreInput,
+    Finished,
+}
+
+pub struct Lexer {
+    input: String,
     pos: usize,
-    len: usize,
     finished: bool,
 }
 
-impl<'a> Lexer<'a> {
-    pub fn new(input: &'a str) -> Self {
+impl Lexer {
+    pub fn new(input: String) -> Self {
         Self {
             input,
             pos: 0,
-            len: input.len(),
             finished: false,
         }
     }
 
-    pub fn next_token(&mut self) -> Result<Token, LexError> {
+    pub fn new_empty() -> Self {
+        Self::new(String::new())
+    }
+
+    pub fn push_str(&mut self, more: &str) {
+        self.input.push_str(more);
+    }
+
+    pub fn push_line(&mut self, line: &str) {
+        self.input.push_str(line);
+        self.input.push('\n');
+    }
+
+    pub fn set_finished(&mut self) {
+        self.finished = true;
+    }
+
+    pub fn collect_tokens(&mut self) -> Result<Vec<Token>, LexError> {
+        let mut out = Vec::new();
+
+        loop {
+            match self.next_token()? {
+                LexStep::Token(tok) => out.push(tok),
+                LexStep::NeedMoreInput => break,
+                LexStep::Finished => {
+                    let at = self.pos;
+                    out.push(Token {
+                        kind: TokenKind::Eof,
+                        span: Span { start: at, end: at },
+                    });
+                    break;
+                }
+            }
+        }
+
+        Ok(out)
+    }
+
+    pub fn next_token(&mut self) -> Result<LexStep, LexError> {
         self.skip_ws_and_comments();
 
-        if self.pos >= self.len {
-            self.finished = true;
-            return Ok(Token {
-                kind: TokenKind::Eof,
-                span: Span {
-                    start: self.len,
-                    end: self.len,
-                },
+        let len = self.input.len();
+
+        // println!("len:{}, pos:{}", len, self.pos);
+        if self.pos >= len {
+            return Ok(if self.finished {
+                LexStep::Finished
+            } else {
+                LexStep::NeedMoreInput
             });
         }
 
@@ -49,61 +92,98 @@ impl<'a> Lexer<'a> {
             span: Span { start, end: start },
         })?;
 
-        let tok = match ch {
+        match ch {
             '(' => {
                 self.bump_char();
-                TokenKind::LParen
+                Ok(LexStep::Token(Token {
+                    kind: TokenKind::LParen,
+                    span: Span {
+                        start,
+                        end: self.pos,
+                    },
+                }))
             }
             ')' => {
                 self.bump_char();
-                TokenKind::RParen
+                Ok(LexStep::Token(Token {
+                    kind: TokenKind::RParen,
+                    span: Span {
+                        start,
+                        end: self.pos,
+                    },
+                }))
             }
             '\'' => {
                 self.bump_char();
-                TokenKind::Quote
+                Ok(LexStep::Token(Token {
+                    kind: TokenKind::Quote,
+                    span: Span {
+                        start,
+                        end: self.pos,
+                    },
+                }))
             }
             '.' => {
                 self.bump_char();
-                TokenKind::Dot
+                Ok(LexStep::Token(Token {
+                    kind: TokenKind::Dot,
+                    span: Span {
+                        start,
+                        end: self.pos,
+                    },
+                }))
             }
             '+' => {
                 self.bump_char();
-                TokenKind::Plus
+                Ok(LexStep::Token(Token {
+                    kind: TokenKind::Plus,
+                    span: Span {
+                        start,
+                        end: self.pos,
+                    },
+                }))
             }
             '-' => {
                 self.bump_char();
-                TokenKind::Minus
+                Ok(LexStep::Token(Token {
+                    kind: TokenKind::Minus,
+                    span: Span {
+                        start,
+                        end: self.pos,
+                    },
+                }))
             }
 
             c if c.is_ascii_digit() => {
-                let (digits, end) = self.read_integer_digits(start)?;
-                return Ok(Token {
+                let (digits, end, complete) = self.read_integer_digits_streaming(start)?;
+                if !complete {
+                    self.pos = start; // rallback
+                    return Ok(LexStep::NeedMoreInput);
+                }
+                return Ok(LexStep::Token(Token {
                     kind: TokenKind::Integer(digits),
                     span: Span { start, end },
-                });
+                }));
             }
 
             _ => {
-                // Null(null), bool, Atom
-                let (lexeme, end) = self.read_lexeme();
+                let (lexeme, end, complete) = self.read_lexeme_streaming();
+                if !complete {
+                    self.pos = start; // rollback
+                    return Ok(LexStep::NeedMoreInput);
+                }
+
                 let kind = classify_lexeme(&lexeme).map_err(|k| LexError {
                     kind: k,
                     span: Span { start, end },
                 })?;
-                return Ok(Token {
+
+                return Ok(LexStep::Token(Token {
                     kind,
                     span: Span { start, end },
-                });
+                }));
             }
-        };
-
-        Ok(Token {
-            kind: tok,
-            span: Span {
-                start,
-                end: self.pos,
-            },
-        })
+        }
     }
 
     fn skip_ws_and_comments(&mut self) {
@@ -137,20 +217,26 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    fn read_lexeme(&mut self) -> (String, usize) {
+    fn read_lexeme_streaming(&mut self) -> (String, usize, bool) {
         let mut s = String::new();
+        let mut saw_delim = false;
+
         while let Some(c) = self.peek_char() {
             if is_delim(c) {
+                saw_delim = true;
                 break;
             }
             s.push(c);
             self.bump_char();
         }
-        (s, self.pos)
+
+        let end = self.pos;
+        let complete = saw_delim || self.finished;
+        (s, end, complete)
     }
 
     fn peek_char(&self) -> Option<char> {
-        self.input[self.pos..].chars().next()
+        self.input.as_str()[self.pos..].chars().next()
     }
 
     fn bump_char(&mut self) -> Option<char> {
@@ -159,13 +245,16 @@ impl<'a> Lexer<'a> {
         Some(c)
     }
 
-    fn read_integer_digits(&mut self, start: usize) -> Result<(String, usize), LexError> {
+    fn read_integer_digits_streaming(&mut self, start: usize) -> Result<(String, usize, bool), LexError> {
         let mut s = String::new();
+        let mut saw_stop = false;
+
         while let Some(c) = self.peek_char() {
             if c.is_ascii_digit() {
                 s.push(c);
                 self.bump_char();
             } else {
+                saw_stop = true;
                 break;
             }
         }
@@ -179,10 +268,10 @@ impl<'a> Lexer<'a> {
                     span: Span { start, end },
                 });
             }
-
         }
 
-        Ok((s, end))
+        let complete = saw_stop || self.finished;
+        Ok((s, end, complete))
     }
 }
 
@@ -202,6 +291,7 @@ fn classify_lexeme(lex: &str) -> Result<TokenKind, LexErrorKind> {
         "true" => return Ok(TokenKind::Bool(true)),
         "false" => return Ok(TokenKind::Bool(false)),
         "null" => return Ok(TokenKind::Null),
+        "quote" => return Ok(TokenKind::Quote),
         _ => {}
     }
 
