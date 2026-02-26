@@ -7,4 +7,5 @@
                    (setq i (plus i 1))
                    (cond (equal i 5)
                          (break))))
-      sum)
+      (return sum)
+)

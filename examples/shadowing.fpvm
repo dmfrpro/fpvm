@@ -1,3 +1,0 @@
-(setq x '(1 2))
-(func test () (setq x 5))
-x  # Should be '(1 2)

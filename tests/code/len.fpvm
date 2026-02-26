@@ -7,5 +7,5 @@
 (prog (xs result)
     (setq xs (cons 10 (cons 20 (cons 30 (cons 40 (cons 50 null))))))
     (setq result (len xs))
-    result
+    (return result)
 )
