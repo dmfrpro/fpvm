@@ -4,6 +4,7 @@ use super::token::{Span, Token, TokenKind};
 pub enum LexErrorKind {
     UnexpectedChar(char),
     InvalidNumber(String),
+    InvalidIdentifier(String),
 }
 
 #[derive(Debug)]
@@ -12,34 +13,18 @@ pub struct LexError {
     pub span: Span,
 }
 
-#[derive(Debug)]
-pub enum LexStep {
-    Token(Token),
-    NeedMoreInput,
-    Finished,
-}
-
 pub struct Lexer {
     input: String,
     pos: usize,
-    finished: bool,
 }
 
 impl Lexer {
-    pub fn new(input: String) -> Self {
-        Self {
-            input,
-            pos: 0,
-            finished: false,
-        }
-    }
-
     pub fn new_empty() -> Self {
-        Self::new(String::new())
+        Self { input: String::new(), pos: 0 }
     }
 
-    pub fn push_str(&mut self, more: &str) {
-        self.input.push_str(more);
+    pub fn new(input: String) -> Self {
+        Self { input, pos: 0 }
     }
 
     pub fn push_line(&mut self, line: &str) {
@@ -47,196 +32,145 @@ impl Lexer {
         self.input.push('\n');
     }
 
-    pub fn set_finished(&mut self) {
-        self.finished = true;
-    }
-
     pub fn collect_tokens(&mut self) -> Result<Vec<Token>, LexError> {
         let mut out = Vec::new();
-
-        loop {
-            match self.next_token()? {
-                LexStep::Token(tok) => out.push(tok),
-                LexStep::NeedMoreInput => break,
-                LexStep::Finished => {
-                    let at = self.pos;
-                    out.push(Token {
-                        kind: TokenKind::Eof,
-                        span: Span { start: at, end: at },
-                    });
-                    break;
-                }
-            }
+        while let Some(tok) = self.next_token()? {
+            out.push(tok);
         }
-
         Ok(out)
     }
 
-    pub fn next_token(&mut self) -> Result<LexStep, LexError> {
+    pub fn next_token(&mut self) -> Result<Option<Token>, LexError> {
         self.skip_ws_and_comments();
 
-        let len = self.input.len();
-
-        // println!("len:{}, pos:{}", len, self.pos);
-        if self.pos >= len {
-            return Ok(if self.finished {
-                LexStep::Finished
-            } else {
-                LexStep::NeedMoreInput
-            });
+        if self.pos >= self.input.len() {
+            return Ok(None);
         }
 
         let start = self.pos;
-        let ch: char = self.peek_char().ok_or_else(|| LexError {
-            kind: LexErrorKind::UnexpectedChar('\0'),
-            span: Span { start, end: start },
-        })?;
+        let ch = self.peek_char().unwrap();
 
-        match ch {
-            '(' => {
-                self.bump_char();
-                Ok(LexStep::Token(Token {
-                    kind: TokenKind::LParen,
-                    span: Span {
-                        start,
-                        end: self.pos,
-                    },
-                }))
-            }
-            ')' => {
-                self.bump_char();
-                Ok(LexStep::Token(Token {
-                    kind: TokenKind::RParen,
-                    span: Span {
-                        start,
-                        end: self.pos,
-                    },
-                }))
-            }
-            '\'' => {
-                self.bump_char();
-                Ok(LexStep::Token(Token {
-                    kind: TokenKind::Quote,
-                    span: Span {
-                        start,
-                        end: self.pos,
-                    },
-                }))
-            }
-            '.' => {
-                self.bump_char();
-                Ok(LexStep::Token(Token {
-                    kind: TokenKind::Dot,
-                    span: Span {
-                        start,
-                        end: self.pos,
-                    },
-                }))
-            }
-            '+' => {
-                self.bump_char();
-                Ok(LexStep::Token(Token {
-                    kind: TokenKind::Plus,
-                    span: Span {
-                        start,
-                        end: self.pos,
-                    },
-                }))
-            }
-            '-' => {
-                self.bump_char();
-                Ok(LexStep::Token(Token {
-                    kind: TokenKind::Minus,
-                    span: Span {
-                        start,
-                        end: self.pos,
-                    },
-                }))
-            }
+        let tok = match ch {
+            '(' => { self.bump_char(); TokenKind::LParen }
+            ')' => { self.bump_char(); TokenKind::RParen }
+            '\'' => { self.bump_char(); TokenKind::Quote }
 
-            c if c.is_ascii_digit() => {
-                let (digits, end, complete) = self.read_integer_digits_streaming(start)?;
-                if !complete {
-                    self.pos = start; // rallback
-                    return Ok(LexStep::NeedMoreInput);
-                }
-                return Ok(LexStep::Token(Token {
-                    kind: TokenKind::Integer(digits),
-                    span: Span { start, end },
-                }));
+            c if c.is_ascii_digit()
+                || ((c == '-' || c == '+')
+                    && self.peek_nth_char(1).is_some_and(|n| n.is_ascii_digit())) =>
+            {
+                let (kind, end) = self.read_number(start)?;
+                return Ok(Some(Token { kind, span: Span { start, end } }));
             }
 
             _ => {
-                let (lexeme, end, complete) = self.read_lexeme_streaming();
-                if !complete {
-                    self.pos = start; // rollback
-                    return Ok(LexStep::NeedMoreInput);
-                }
-
+                let (lexeme, end) = self.read_lexeme();
                 let kind = classify_lexeme(&lexeme).map_err(|k| LexError {
                     kind: k,
                     span: Span { start, end },
                 })?;
-
-                return Ok(LexStep::Token(Token {
-                    kind,
-                    span: Span { start, end },
-                }));
+                return Ok(Some(Token { kind, span: Span { start, end } }));
             }
-        }
+        };
+
+        Ok(Some(Token { kind: tok, span: Span { start, end: self.pos } }))
     }
 
     fn skip_ws_and_comments(&mut self) {
         loop {
-            self.skip_whitespace();
+            while self.peek_char().is_some_and(|c| c.is_whitespace()) {
+                self.bump_char();
+            }
+
             if self.peek_char() == Some('#') {
-                self.skip_comment_hash();
+                // comment to end of line
+                while let Some(c) = self.peek_char() {
+                    self.bump_char();
+                    if c == '\n' { break; }
+                }
                 continue;
             }
+
             break;
         }
     }
 
-    fn skip_whitespace(&mut self) {
-        while let Some(c) = self.peek_char() {
-            if c.is_whitespace() {
-                self.bump_char();
-            } else {
-                break;
-            }
-        }
-    }
-
-    fn skip_comment_hash(&mut self) {
-        // comment starts with char #
-        while let Some(c) = self.peek_char() {
-            self.bump_char();
-            if c == '\n' {
-                break;
-            }
-        }
-    }
-
-    fn read_lexeme_streaming(&mut self) -> (String, usize, bool) {
+    fn read_lexeme(&mut self) -> (String, usize) {
         let mut s = String::new();
-        let mut saw_delim = false;
-
         while let Some(c) = self.peek_char() {
-            if is_delim(c) {
-                saw_delim = true;
-                break;
-            }
+            if is_delim(c) { break; }
             s.push(c);
             self.bump_char();
         }
+        (s, self.pos)
+    }
 
-        let end = self.pos;
-        let complete = saw_delim || self.finished;
-        (s, end, complete)
+    fn read_number(&mut self, start: usize) -> Result<(TokenKind, usize), LexError> {
+        // int = [+|-] Integer
+        // real = [+|-] Integer.Integer
+
+        let mut s = String::new();
+
+        // the number should follow the sign
+        if let Some(c) = self.peek_char() {
+            if (c == '+' || c == '-') && self.peek_nth_char(1).is_some_and(|n| n.is_ascii_digit()) {
+                s.push(c);
+                self.bump_char();
+            }
+        }
+
+        // Integer detection
+        let mut int_digits = 0usize;
+        while self.peek_char().is_some_and(|c| c.is_ascii_digit()) {
+            let c = self.bump_char().unwrap();
+            s.push(c);
+            int_digits += 1;
+        }
+
+        let mut is_real = false;
+        let mut frac_digits = 0usize;
+
+        // Real detection if symbol '.' occured
+        if self.peek_char() == Some('.') && self.peek_nth_char(1).is_some_and(|n| n.is_ascii_digit()) {
+            is_real = true;
+            s.push('.');
+            self.bump_char();
+
+            while self.peek_char().is_some_and(|c| c.is_ascii_digit()) {
+                let c = self.bump_char().unwrap();
+                s.push(c);
+                frac_digits += 1;
+            }
+        }
+
+        // Checking for the end of a number. If there is no delim then error occurs. To prevent cases such as: '123asd' '123.123abc' ...
+        if let Some(c) = self.peek_char() {
+            if !is_delim(c) {
+                return Err(LexError {
+                    kind: LexErrorKind::UnexpectedChar(c),
+                    span: Span { start, end: self.pos },
+                });
+            }
+        }
+
+        let total_digits = int_digits + frac_digits;
+        if total_digits == 0 {
+            return Err(LexError {
+                kind: LexErrorKind::InvalidNumber(s),
+                span: Span { start, end: self.pos },
+            });
+        }
+
+        let kind = if is_real { TokenKind::Real(s) } else { TokenKind::Integer(s) };
+        Ok((kind, self.pos))
     }
 
     fn peek_char(&self) -> Option<char> {
         self.input.as_str()[self.pos..].chars().next()
+    }
+
+    fn peek_nth_char(&self, n: usize) -> Option<char> {
+        self.input.as_str()[self.pos..].chars().nth(n)
     }
 
     fn bump_char(&mut self) -> Option<char> {
@@ -244,57 +178,64 @@ impl Lexer {
         self.pos += c.len_utf8();
         Some(c)
     }
-
-    fn read_integer_digits_streaming(&mut self, start: usize) -> Result<(String, usize, bool), LexError> {
-        let mut s = String::new();
-        let mut saw_stop = false;
-
-        while let Some(c) = self.peek_char() {
-            if c.is_ascii_digit() {
-                s.push(c);
-                self.bump_char();
-            } else {
-                saw_stop = true;
-                break;
-            }
-        }
-
-        let end = self.pos;
-
-        if let Some(c) = self.peek_char() {
-            if c.is_alphabetic() {
-                return Err(LexError {
-                    kind: LexErrorKind::UnexpectedChar(c),
-                    span: Span { start, end },
-                });
-            }
-        }
-
-        let complete = saw_stop || self.finished;
-        Ok((s, end, complete))
-    }
 }
 
+// set of characters that are delimeters
 fn is_delim(c: char) -> bool {
-    c.is_whitespace()
-        || c == '('
-        || c == ')'
-        || c == '\''
-        || c == '#'
-        || c == '.'
-        || c == '+'
-        || c == '-'
+    c.is_whitespace() || c == '(' || c == ')' || c == '#' || c == '\''
 }
 
 fn classify_lexeme(lex: &str) -> Result<TokenKind, LexErrorKind> {
     match lex {
-        "true" => return Ok(TokenKind::Bool(true)),
-        "false" => return Ok(TokenKind::Bool(false)),
-        "null" => return Ok(TokenKind::Null),
-        "quote" => return Ok(TokenKind::Quote),
-        _ => {}
+        // literals
+        "true" => Ok(TokenKind::Bool(true)),
+        "false" => Ok(TokenKind::Bool(false)),
+        "null" => Ok(TokenKind::Null),
+
+        // keywords
+        "quote" => Ok(TokenKind::Quote),
+        "setq" => Ok(TokenKind::Setq),
+        "func" => Ok(TokenKind::Func),
+        "lambda" => Ok(TokenKind::Lambda),
+        "prog" => Ok(TokenKind::Prog),
+        "cond" => Ok(TokenKind::Cond),
+        "while" => Ok(TokenKind::While),
+        "return" => Ok(TokenKind::Return),
+        "break" => Ok(TokenKind::Break),
+
+        _ => {
+            validate_identifier(lex)?;
+            Ok(TokenKind::Identifier(lex.to_string()))
+        }
+    }
+}
+
+fn validate_identifier(lex: &str) -> Result<(), LexErrorKind> {
+    if lex.is_empty() {
+        return Err(LexErrorKind::InvalidIdentifier(lex.to_string()));
     }
 
-    // everything else is an atom
-    Ok(TokenKind::Atom(lex.to_string()))
+    let mut chars = lex.chars();
+    let first = chars.next().unwrap();
+    if first.is_ascii_digit() {
+        return Err(LexErrorKind::InvalidIdentifier(lex.to_string()));
+    }
+
+    if !is_ident_char(first) {
+        return Err(LexErrorKind::InvalidIdentifier(lex.to_string()));
+    }
+
+    for c in chars {
+        if !is_ident_char(c) {
+            return Err(LexErrorKind::InvalidIdentifier(lex.to_string()));
+        }
+    }
+
+    Ok(())
+}
+
+// set of characters allowed for the identifier
+fn is_ident_char(c: char) -> bool {
+    c.is_ascii_alphanumeric()
+        || matches!(c, '_' )
 }
