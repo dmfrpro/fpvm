@@ -221,14 +221,8 @@ fn validate_identifier(lex: &str) -> Result<(), LexErrorKind> {
         return Err(LexErrorKind::InvalidIdentifier(lex.to_string()));
     }
 
-    if !is_ident_char(first) {
+    if chars.any(|c| !is_ident_char(c)) {
         return Err(LexErrorKind::InvalidIdentifier(lex.to_string()));
-    }
-
-    for c in chars {
-        if !is_ident_char(c) {
-            return Err(LexErrorKind::InvalidIdentifier(lex.to_string()));
-        }
     }
 
     Ok(())
