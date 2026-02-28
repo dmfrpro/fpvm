@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Position {
     pub offset: usize,
     pub col: usize,
@@ -15,7 +15,17 @@ impl Position {
     }  
 }
 
-#[derive(Debug)]
+impl Default for Position {
+    fn default() -> Self {
+        Self {
+            offset: 0,
+            col: 1,
+            line: 1,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Span {
     pub start: Position,
     pub end: Position,
@@ -27,14 +37,15 @@ pub struct Token {
     pub span: Span,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum TokenKind {
     // punctuation
     LParen,
     RParen,
 
     // keywords
-    Quote,
+    QuoteKeyword,
+    QuoteSign,
     Setq,
     Func,
     Lambda,

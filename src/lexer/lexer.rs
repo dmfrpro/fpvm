@@ -69,7 +69,7 @@ impl Lexer {
             }
             '\'' => {
                 self.bump_char();
-                TokenKind::Quote
+                TokenKind::QuoteSign
             }
 
             c if c.is_ascii_digit()
@@ -261,7 +261,7 @@ fn classify_lexeme(lex: &str) -> Result<TokenKind, LexErrorKind> {
         "null" => Ok(TokenKind::Null),
 
         // keywords
-        "quote" => Ok(TokenKind::Quote),
+        "quote" => Ok(TokenKind::QuoteKeyword),
         "setq" => Ok(TokenKind::Setq),
         "func" => Ok(TokenKind::Func),
         "lambda" => Ok(TokenKind::Lambda),
