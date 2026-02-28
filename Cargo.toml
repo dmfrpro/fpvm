@@ -16,3 +16,4 @@ name = "lexi"
 path = "src/bin/lexi.rs"
 
 [dependencies]
+racc = "0.0.4"
