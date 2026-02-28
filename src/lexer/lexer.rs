@@ -181,8 +181,7 @@ impl Lexer {
         }
 
         // Checking for the end of a number. If there is no delim then error occurs. To prevent cases such as: '123asd' '123.123abc' ...
-        if let Some(c) = self.peek_char() {
-            if !is_delim(c) {
+        if let Some(c) = self.peek_char().filter(|&c| !is_delim(c)) {
                 return Err(LexError {
                     kind: LexErrorKind::UnexpectedChar(c),
                     span: Span {
