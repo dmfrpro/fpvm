@@ -87,7 +87,10 @@ impl Lexer {
                 let (lexeme, end) = self.read_lexeme();
                 let kind = classify_lexeme(&lexeme).map_err(|k| LexError {
                     kind: k,
-                    span: Span { start : start.clone(), end : end.clone() },
+                    span: Span {
+                        start: start.clone(),
+                        end: end.clone(),
+                    },
                 })?;
 
                 return Ok(Some(Token {
@@ -181,15 +184,28 @@ impl Lexer {
         }
 
         // Checking for the end of a number. If there is no delim then error occurs. To prevent cases such as: '123asd' '123.123abc' ...
-        if let Some(c) = self.peek_char().filter(|&c| !is_delim(c)) {
-                return Err(LexError {
-                    kind: LexErrorKind::UnexpectedChar(c),
-                    span: Span {
-                        start,
-                        end: self.pos.clone(),
-                    },
-                });
+        // If after a number we have a non-delimiter, consume the whole junk suffix
+        // to avoid producing a second token (e.g. "123abc" -> error + "abc").
+        if self.peek_char().is_some_and(|c| !is_delim(c)) {
+            // consume all chars until delimeter to achive correct behaviour:
+            // input: 123abc
+            // lexer output (wrong): UnexpectedChar('a') Identifier("abc") 
+            // lexer output (good): InvalidNumber("123abc")
+            while let Some(c) = self.peek_char() {
+                if is_delim(c) {
+                    break;
+                }
+                s.push(c);
+                self.bump_char();
             }
+
+            return Err(LexError {
+                kind: LexErrorKind::InvalidNumber(s),
+                span: Span {
+                    start,
+                    end: self.pos.clone(),
+                },
+            });
         }
 
         let total_digits = int_digits + frac_digits;
@@ -263,17 +279,16 @@ fn classify_lexeme(lex: &str) -> Result<TokenKind, LexErrorKind> {
 }
 
 fn validate_identifier(lex: &str) -> Result<(), LexErrorKind> {
-    if lex.is_empty() {
-        return Err(LexErrorKind::InvalidIdentifier(lex.to_string()));
-    }
+    let first = lex
+        .chars()
+        .next()
+        .ok_or_else(|| LexErrorKind::InvalidIdentifier(lex.to_string()))?;
 
-    let mut chars = lex.chars();
-    let first = chars.next().unwrap();
     if first.is_ascii_digit() {
         return Err(LexErrorKind::InvalidIdentifier(lex.to_string()));
     }
 
-    if chars.any(|c| !is_ident_char(c)) {
+    if !lex.chars().all(is_ident_char) {
         return Err(LexErrorKind::InvalidIdentifier(lex.to_string()));
     }
 
