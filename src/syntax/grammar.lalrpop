@@ -1,0 +1,55 @@
+use crate syntax::node::{Node, SyntaxErrorKind};
+use crate lexer::token::{Token, TokenKind, Span};
+
+grammar;
+
+extern {
+    enum TokenKind {
+        "(" => TokenKind::LParen,
+        ")" => TokenKind::RParen,
+        "'" => TokenKind::Quote,
+        "setq" => TokenKind::Setq,
+        "func" => TokenKind::Func,
+        "lambda" => TokenKind::Lambda,
+        "prog" => TokenKind::Prog,
+        "cond" => TokenKind::Cond,
+        "while" => TokenKind::While,
+        "return" => TokenKind::Return,
+        "break" => TokenKind::Break,
+        "integer" => TokenKind::Integer(<String>),
+        "real" => TokenKind::Real(<String>),
+        "bool" => TokenKind::Bool(<bool>),
+        "null" => TokenKind::Null,
+        "identifier" => TokenKind::Identifier(<String>),
+    }
+}
+
+pub Program: NodeKind = {
+    Elements => NodeKind::ProgramNode(<>),
+};
+
+Elements: NodeKind = {
+    Element+ => Node::new(NodeKind::ElementsNode(map(Box::new, <>))),
+}
+
+List: NodeKind = {
+    "(" Elements ")" => NodeKind::List(<>),
+}
+
+Identifier: NodeKind = {
+    <name:"identifier"> => NodeKind::Identifier(name),
+}
+
+Element: NodeKind = {
+    "'" Element,
+    Literal,
+    Identifier,
+    List,
+}
+
+Literal: NodeKind = {
+    <val:"integer"> => { NodeKind::IntNode(val) },
+    <val:"real"> => { NodeKind::RealNode(val) },
+    <val:"bool"> => { NodeKind::BoolNode(val) },
+    "null" => {NodeKind::NullNode},
+}

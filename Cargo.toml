@@ -16,4 +16,7 @@ name = "lexi"
 path = "src/bin/lexi.rs"
 
 [dependencies]
-racc = "0.0.4"
+lalrpop-util = { version = "0.23.0" }
+
+[build-dependencies]
+lalrpop = { version = "0.23.0" }
