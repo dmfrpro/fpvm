@@ -12,17 +12,26 @@ pub struct Token {
 
 #[derive(Debug)]
 pub enum TokenKind {
+    // punctuation
     LParen,
     RParen,
-    Quote,
-    Dot,
-    Plus,
-    Minus,
 
+    // keywords
+    Quote,
+    Setq,
+    Func,
+    Lambda,
+    Prog,
+    Cond,
+    While,
+    Return,
+    Break,
+
+    // literals
     Integer(String),
+    Real(String),        
     Bool(bool),
     Null,
-    Atom(String),
 
-    Eof,
+    Identifier(String),
 }

@@ -1,6 +1,6 @@
 use std::io::{self, Read};
 
-use compier::lexer::{self, LexStep, Lexer, TokenKind};
+use compier::lexer::{Lexer};
 
 fn main() {
     let mut src = String::new();
