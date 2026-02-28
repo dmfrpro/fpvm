@@ -1,4 +1,4 @@
-use super::token::{Span, Token, TokenKind};
+use super::token::{Position, Span, Token, TokenKind};
 
 #[derive(Debug)]
 pub enum LexErrorKind {
@@ -15,21 +15,29 @@ pub struct LexError {
 
 pub struct Lexer {
     input: String,
-    pos: usize,
+    pos: Position,
 }
 
 impl Lexer {
     pub fn new_empty() -> Self {
-        Self { input: String::new(), pos: 0 }
+        Self {
+            input: String::new(),
+            pos: Position::new(),
+        }
     }
 
     pub fn new(input: String) -> Self {
-        Self { input, pos: 0 }
+        Self {
+            input,
+            pos: Position::new(),
+        }
     }
 
     pub fn push_line(&mut self, line: &str) {
-        self.input.push_str(line);
-        self.input.push('\n');
+        if !line.is_empty() {
+            self.input.push_str(line.trim_end());
+            self.input.push('\n');
+        }
     }
 
     pub fn collect_tokens(&mut self) -> Result<Vec<Token>, LexError> {
@@ -43,37 +51,59 @@ impl Lexer {
     pub fn next_token(&mut self) -> Result<Option<Token>, LexError> {
         self.skip_ws_and_comments();
 
-        if self.pos >= self.input.len() {
+        if self.pos.offset >= self.input.len() {
             return Ok(None);
         }
 
-        let start = self.pos;
+        let start = self.pos.clone();
         let ch = self.peek_char().unwrap();
 
         let tok = match ch {
-            '(' => { self.bump_char(); TokenKind::LParen }
-            ')' => { self.bump_char(); TokenKind::RParen }
-            '\'' => { self.bump_char(); TokenKind::Quote }
+            '(' => {
+                self.bump_char();
+                TokenKind::LParen
+            }
+            ')' => {
+                self.bump_char();
+                TokenKind::RParen
+            }
+            '\'' => {
+                self.bump_char();
+                TokenKind::Quote
+            }
 
             c if c.is_ascii_digit()
                 || ((c == '-' || c == '+')
                     && self.peek_nth_char(1).is_some_and(|n| n.is_ascii_digit())) =>
             {
-                let (kind, end) = self.read_number(start)?;
-                return Ok(Some(Token { kind, span: Span { start, end } }));
+                let (kind, end) = self.read_number()?;
+                return Ok(Some(Token {
+                    kind,
+                    span: Span { start, end },
+                }));
             }
 
             _ => {
                 let (lexeme, end) = self.read_lexeme();
                 let kind = classify_lexeme(&lexeme).map_err(|k| LexError {
                     kind: k,
-                    span: Span { start, end },
+                    span: Span { start : start.clone(), end : end.clone() },
                 })?;
-                return Ok(Some(Token { kind, span: Span { start, end } }));
+
+                return Ok(Some(Token {
+                    kind,
+                    span: Span { start, end },
+                }));
             }
         };
 
-        Ok(Some(Token { kind: tok, span: Span { start, end: self.pos } }))
+        Ok(Some(Token {
+            kind: tok,
+            span: Span {
+                start,
+                end: self.pos.clone(),
+            },
+        }))
     }
 
     fn skip_ws_and_comments(&mut self) {
@@ -86,7 +116,9 @@ impl Lexer {
                 // comment to end of line
                 while let Some(c) = self.peek_char() {
                     self.bump_char();
-                    if c == '\n' { break; }
+                    if c == '\n' {
+                        break;
+                    }
                 }
                 continue;
             }
@@ -95,21 +127,24 @@ impl Lexer {
         }
     }
 
-    fn read_lexeme(&mut self) -> (String, usize) {
+    fn read_lexeme(&mut self) -> (String, Position) {
         let mut s = String::new();
         while let Some(c) = self.peek_char() {
-            if is_delim(c) { break; }
+            if is_delim(c) {
+                break;
+            }
             s.push(c);
             self.bump_char();
         }
-        (s, self.pos)
+        (s, self.pos.clone())
     }
 
-    fn read_number(&mut self, start: usize) -> Result<(TokenKind, usize), LexError> {
+    fn read_number(&mut self) -> Result<(TokenKind, Position), LexError> {
         // int = [+|-] Integer
         // real = [+|-] Integer.Integer
 
         let mut s = String::new();
+        let start = self.pos.clone();
 
         // the number should follow the sign
         if let Some(c) = self.peek_char() {
@@ -131,7 +166,9 @@ impl Lexer {
         let mut frac_digits = 0usize;
 
         // Real detection if symbol '.' occured
-        if self.peek_char() == Some('.') && self.peek_nth_char(1).is_some_and(|n| n.is_ascii_digit()) {
+        if self.peek_char() == Some('.')
+            && self.peek_nth_char(1).is_some_and(|n| n.is_ascii_digit())
+        {
             is_real = true;
             s.push('.');
             self.bump_char();
@@ -148,7 +185,10 @@ impl Lexer {
             if !is_delim(c) {
                 return Err(LexError {
                     kind: LexErrorKind::UnexpectedChar(c),
-                    span: Span { start, end: self.pos },
+                    span: Span {
+                        start,
+                        end: self.pos.clone(),
+                    },
                 });
             }
         }
@@ -157,25 +197,38 @@ impl Lexer {
         if total_digits == 0 {
             return Err(LexError {
                 kind: LexErrorKind::InvalidNumber(s),
-                span: Span { start, end: self.pos },
+                span: Span {
+                    start,
+                    end: self.pos.clone(),
+                },
             });
         }
 
-        let kind = if is_real { TokenKind::Real(s) } else { TokenKind::Integer(s) };
-        Ok((kind, self.pos))
+        let kind = if is_real {
+            TokenKind::Real(s)
+        } else {
+            TokenKind::Integer(s)
+        };
+        Ok((kind, self.pos.clone()))
     }
 
     fn peek_char(&self) -> Option<char> {
-        self.input.as_str()[self.pos..].chars().next()
+        self.input.as_str()[self.pos.offset..].chars().next()
     }
 
     fn peek_nth_char(&self, n: usize) -> Option<char> {
-        self.input.as_str()[self.pos..].chars().nth(n)
+        self.input.as_str()[self.pos.offset..].chars().nth(n)
     }
 
     fn bump_char(&mut self) -> Option<char> {
         let c = self.peek_char()?;
-        self.pos += c.len_utf8();
+        if c == '\n' {
+            self.pos.col = 1;
+            self.pos.line += 1;
+        } else {
+            self.pos.col += 1;
+        }
+        self.pos.offset += c.len_utf8();
         Some(c)
     }
 }
@@ -230,6 +283,5 @@ fn validate_identifier(lex: &str) -> Result<(), LexErrorKind> {
 
 // set of characters allowed for the identifier
 fn is_ident_char(c: char) -> bool {
-    c.is_ascii_alphanumeric()
-        || matches!(c, '_' )
+    c.is_ascii_alphanumeric() || matches!(c, '_')
 }
