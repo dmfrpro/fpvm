@@ -1,4 +1,4 @@
-use compier::lexer::{Lexer};
+use compier::lexer::Lexer;
 use std::io::{self, Write};
 
 fn main() {
@@ -24,26 +24,21 @@ fn main() {
         };
 
         // stop condition
-        if bytes != 0 {
-            // println!("[Debug] \"{}\"", line);
-            lx.push_line(&line);
-        }
-        else {
-            return
+        if bytes == 0 {
+            return;
         }
 
+        lx.push_line(&line);
         loop {
             match lx.next_token() {
                 Ok(Some(tok)) => {
                     println!("{:?} {:?}", tok.kind, tok.span);
                 }
                 Ok(None) => {
-                    // println!("[Debug] NeedMoreInput");
                     break;
                 }
                 Err(e) => {
                     eprintln!("lex error: {:?}", e);
-                    // return;
                 }
             }
         }
