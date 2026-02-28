@@ -17,7 +17,7 @@ fn main() {
             let parser = grammar::ProgramParser::new();
             match parser.parse(token_iter) {
                 Ok(inner_result) => match inner_result {
-                    Ok(node) => println!("Parsed successfully: {:?}", node),
+                    Ok(node) => println!("Parsed successfully: {}", node),
                     Err(semantic_error) => println!("Semantic error: {:?}", semantic_error),
                 },
                 Err(parse_error) => println!("Syntax error: {:?}", parse_error),
