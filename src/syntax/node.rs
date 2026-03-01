@@ -74,19 +74,19 @@ impl Node {
                 writeln!(f, "{})", indent_str)
             }
             NodeKind::LambdaNode(list, elem) => {
-                writeln!(f, "Func(")?;
+                writeln!(f, "Lambda(")?;
                 list.fmt_with_indent(f, indent + 2)?;
                 elem.fmt_with_indent(f, indent + 2)?;
                 writeln!(f, "{})", indent_str)
             }
             NodeKind::ProgNode(list, elem) => {
-                writeln!(f, "Func(")?;
+                writeln!(f, "Prog(")?;
                 list.fmt_with_indent(f, indent + 2)?;
                 elem.fmt_with_indent(f, indent + 2)?;
                 writeln!(f, "{})", indent_str)
             }
             NodeKind::CondNode(elem1, elem2, elem3) => {
-                writeln!(f, "Func(")?;
+                writeln!(f, "Cond(")?;
                 elem1.fmt_with_indent(f, indent + 2)?;
                 elem2.fmt_with_indent(f, indent + 2)?;
 
@@ -97,13 +97,13 @@ impl Node {
                 writeln!(f, "{})", indent_str)
             }
             NodeKind::WhileNode(cond, body) => {
-                writeln!(f, "Func(")?;
+                writeln!(f, "While(")?;
                 cond.fmt_with_indent(f, indent + 2)?;
                 body.fmt_with_indent(f, indent + 2)?;
                 writeln!(f, "{})", indent_str)
             }
             NodeKind::ReturnNode(elem) => {
-                writeln!(f, "Func(")?;
+                writeln!(f, "Return(")?;
                 elem.fmt_with_indent(f, indent + 2)?;
                 writeln!(f, "{})", indent_str)
             }
@@ -207,7 +207,7 @@ impl MultilinePosition {
         Self {
             start_col: start.col,
             start_line: start.line,
-            end_col: end.col + end.offset,
+            end_col: end.col,
             end_line: end.line,
         }
     }
@@ -216,7 +216,7 @@ impl MultilinePosition {
         Self {
             start_col: position.col,
             start_line: position.line,
-            end_col: position.col + position.offset,
+            end_col: position.col,
             end_line: position.line,
         }
     }
