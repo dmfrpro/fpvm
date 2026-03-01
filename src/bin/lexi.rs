@@ -1,4 +1,4 @@
-use compier::lexer::Lexer;
+use complier::lexer::Lexer;
 use std::io::{self, Write};
 
 fn main() {
