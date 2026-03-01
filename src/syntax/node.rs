@@ -32,14 +32,14 @@ pub enum NodeKind {
 #[derive(Debug)]
 pub struct Node {
     pub kind: NodeKind,
-    pub span: (Position, Position)
+    pub span: MultilinePosition,
 }
 
 impl Node {
     pub fn new(kind: NodeKind, span: (Position, Position)) -> Self {
         Self {
             kind,
-            span,
+            span: MultilinePosition::from_positions(span.0, span.1),
         }
     }
 
@@ -149,3 +149,22 @@ pub enum SyntaxErrorKind {
     UnexpectedParse(String),
 }
 
+#[derive(Debug)]
+pub struct MultilinePosition {
+    pub start_col: usize,
+    pub start_line: usize,
+
+    pub end_col: usize,
+    pub end_line: usize,
+}
+
+impl MultilinePosition {
+    pub fn from_positions(start: Position, end: Position) -> Self {
+        Self {
+            start_col: start.col,
+            start_line: start.line,
+            end_col: end.col + end.offset,
+            end_line: end.line,
+        }
+    }
+}
