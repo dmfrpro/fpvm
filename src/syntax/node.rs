@@ -56,37 +56,32 @@ impl Node {
             NodeKind::Identifier(name) => writeln!(f, "Identifier({})", name),
 
             NodeKind::QuoteNode(subnode) => {
-                writeln!(f, "Quote(")?;
-                subnode.fmt_with_indent(f, indent + 2)?;
-                writeln!(f, "{})", indent_str)
+                writeln!(f, "Quote")?;
+                subnode.fmt_with_indent(f, indent + 2)
             }
             NodeKind::SetqNode(atom, elem) => {
-                writeln!(f, "Setq(")?;
+                writeln!(f, "Setq")?;
                 atom.fmt_with_indent(f, indent + 2)?;
-                elem.fmt_with_indent(f, indent + 2)?;
-                writeln!(f, "{})", indent_str)
+                elem.fmt_with_indent(f, indent + 2)
             }
             NodeKind::FuncNode(atom, list, elem) => {
-                writeln!(f, "Func(")?;
+                writeln!(f, "Func")?;
                 atom.fmt_with_indent(f, indent + 2)?;
                 list.fmt_with_indent(f, indent + 2)?;
-                elem.fmt_with_indent(f, indent + 2)?;
-                writeln!(f, "{})", indent_str)
+                elem.fmt_with_indent(f, indent + 2)
             }
             NodeKind::LambdaNode(list, elem) => {
-                writeln!(f, "Lambda(")?;
+                writeln!(f, "Lambda")?;
                 list.fmt_with_indent(f, indent + 2)?;
-                elem.fmt_with_indent(f, indent + 2)?;
-                writeln!(f, "{})", indent_str)
+                elem.fmt_with_indent(f, indent + 2)
             }
             NodeKind::ProgNode(list, elem) => {
-                writeln!(f, "Prog(")?;
+                writeln!(f, "Prog")?;
                 list.fmt_with_indent(f, indent + 2)?;
-                elem.fmt_with_indent(f, indent + 2)?;
-                writeln!(f, "{})", indent_str)
+                elem.fmt_with_indent(f, indent + 2)
             }
             NodeKind::CondNode(elem1, elem2, elem3) => {
-                writeln!(f, "Cond(")?;
+                writeln!(f, "Cond")?;
                 elem1.fmt_with_indent(f, indent + 2)?;
                 elem2.fmt_with_indent(f, indent + 2)?;
 
@@ -94,43 +89,38 @@ impl Node {
                     elem.fmt_with_indent(f, indent + 2)?;
                 }
 
-                writeln!(f, "{})", indent_str)
+                Ok(())
             }
             NodeKind::WhileNode(cond, body) => {
-                writeln!(f, "While(")?;
+                writeln!(f, "While")?;
                 cond.fmt_with_indent(f, indent + 2)?;
-                body.fmt_with_indent(f, indent + 2)?;
-                writeln!(f, "{})", indent_str)
+                body.fmt_with_indent(f, indent + 2)
             }
             NodeKind::ReturnNode(elem) => {
-                writeln!(f, "Return(")?;
-                elem.fmt_with_indent(f, indent + 2)?;
-                writeln!(f, "{})", indent_str)
+                writeln!(f, "Return")?;
+                elem.fmt_with_indent(f, indent + 2)
             }
             NodeKind::BreakNode => {
                 writeln!(f, "Break")
             }
             NodeKind::ElementNode(subexpr) => {
-                writeln!(f, "Element(")?;
-                subexpr.fmt_with_indent(f, indent + 2)?;
-                writeln!(f, "{})", indent_str)
+                writeln!(f, "Element")?;
+                subexpr.fmt_with_indent(f, indent + 2)
             }
             NodeKind::ElementsNode(subexprs) => {
-                writeln!(f, "Elements(")?;
+                writeln!(f, "Elements")?;
                 for subexpr in subexprs {
                     subexpr.fmt_with_indent(f, indent + 2)?;
                 }
-                writeln!(f, "{})", indent_str)
+                Ok(())
             }
             NodeKind::ListNode(subexpr) => {
-                writeln!(f, "List(")?;
-                subexpr.fmt_with_indent(f, indent + 2)?;
-                writeln!(f, "{})", indent_str)
+                writeln!(f, "List")?;
+                subexpr.fmt_with_indent(f, indent + 2)
             }
             NodeKind::ProgramNode(subexpr) => {
-                writeln!(f, "Program(")?;
-                subexpr.fmt_with_indent(f, indent + 2)?;
-                writeln!(f, "{})", indent_str)
+                writeln!(f, "Program")?;
+                subexpr.fmt_with_indent(f, indent + 2)
             }
         }
     }

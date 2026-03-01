@@ -23,7 +23,7 @@ fn main() {
 
             match parse_result {
                 Ok(node) => {
-                    println!("Successful parse: {}", node);
+                    println!("Successful parse:\n{}", node);
                 }
                 Err(syntax_error) => {
                     eprintln!("{}", syntax_error);
