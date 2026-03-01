@@ -144,9 +144,53 @@ impl Display for Node {
 
 #[derive(Debug)]
 pub enum SyntaxErrorKind {
-    Error(String),
-    InvalidNumber(String),
-    UnexpectedParse(String),
+    Error, // General Error
+    InvalidNumber,
+    UnexpectedToken,
+    InvalidToken,
+    UnrecognizedEof,
+    ExtraToken,
+}
+
+impl Display for SyntaxErrorKind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let message = match self {
+            SyntaxErrorKind::Error => "Error",
+            SyntaxErrorKind::InvalidNumber => "InvalidNumber",
+            SyntaxErrorKind::UnexpectedToken => "UnexpectedToken",
+            SyntaxErrorKind::InvalidToken => "InvalidToken",
+            SyntaxErrorKind::UnrecognizedEof => "UnrecognizedEof",
+            SyntaxErrorKind::ExtraToken => "ExtraToken",  
+        }; 
+        write!(f, "{}", message)
+    }
+}
+
+#[derive(Debug)]
+pub struct SyntaxError {
+    kind: SyntaxErrorKind,
+    message: Option<String>,
+    span: MultilinePosition,
+}
+
+impl SyntaxError {
+    pub fn new(kind: SyntaxErrorKind, message: Option<String>, span: MultilinePosition) -> Self {
+        Self {
+            kind,
+            message,
+            span,
+        }
+    }
+}
+
+impl Display for SyntaxError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.message.is_some() {
+            writeln!(f, "{}: {} at {}", self.kind, self.message.clone().unwrap(), self.span)
+        } else {
+            writeln!(f, "{} at {}", self.kind, self.span)
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -165,6 +209,44 @@ impl MultilinePosition {
             start_line: start.line,
             end_col: end.col + end.offset,
             end_line: end.line,
+        }
+    }
+
+    pub fn from_position(position: Position) -> Self {
+        Self {
+            start_col: position.col,
+            start_line: position.line,
+            end_col: position.col + position.offset,
+            end_line: position.line,
+        }
+    }
+}
+
+impl Default for MultilinePosition {
+    fn default() -> Self {
+        Self {
+            start_col: 1,
+            start_line: 0,
+            end_col: 1,
+            end_line: 0,
+        }
+    }
+}
+
+impl fmt::Display for MultilinePosition {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.start_line == self.end_line {
+            // Single line
+            if self.start_col == self.end_col {
+                // Single column
+                write!(f, "at line {}, column {}", self.start_line, self.start_col)
+            } else {
+                // Range on one line
+                write!(f, "at line {}, columns {}-{}", self.start_line, self.start_col, self.end_col)
+            }
+        } else {
+            // Multi‑line range
+            write!(f, "from line {}:{} to line {}:{}", self.start_line, self.start_col, self.end_line, self.end_col)
         }
     }
 }

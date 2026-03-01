@@ -1,7 +1,7 @@
 use std::io::{self, Read};
 
-use complier::lexer::Lexer;
-use complier::grammar;
+use compiler::lexer::Lexer;
+use compiler::syntax::parse_syntax;
 
 fn main() {
     let mut src = String::new();
@@ -12,16 +12,17 @@ fn main() {
 
     match lx.collect_tokens() {
         Ok(tokens) => {
-            let token_iter = tokens.into_iter().map(|tok| (tok.span.start, tok.kind, tok.span.end));
+            let parse_result = parse_syntax(tokens);
 
-            let parser = grammar::ProgramParser::new();
-            match parser.parse(token_iter) {
-                Ok(inner_result) => match inner_result {
-                    Ok(node) => println!("Parsed successfully: {}", node),
-                    Err(semantic_error) => println!("Semantic error: {:?}", semantic_error),
-                },
-                Err(parse_error) => println!("Syntax error: {:?}", parse_error),
+            match parse_result {
+                Ok(node) => {
+                    println!("Successful parse: {}", node);
+                }
+                Err(syntax_error) => {
+                    eprintln!("{}", syntax_error);
+                }
             }
+            
         }
 
         Err(e) => {
