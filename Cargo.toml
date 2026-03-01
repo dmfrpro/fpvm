@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [lib]
-name = "complier"
+name = "compiler"
 path = "src/lib.rs"
 
 [[bin]]
@@ -14,6 +14,10 @@ path = "src/bin/lex_bin.rs"
 [[bin]]
 name = "lexi"
 path = "src/bin/lexi.rs"
+
+[[bin]]
+name = "syntax_bin" 
+path = "src/bin/syntax_bin.rs"
 
 [dependencies]
 lalrpop-util = { version = "0.23.0" }
