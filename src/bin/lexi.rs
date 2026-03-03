@@ -47,7 +47,7 @@ where
         self.dump_tokens()
     }
 
-        fn dump_tokens(&mut self) -> io::Result<()> {
+    fn dump_tokens(&mut self) -> io::Result<()> {
         for item in self.lexer.by_ref() {
             match item {
                 Ok(tok) => writeln!(self.output, "{:?} {:?}", tok.kind, tok.span)?,
