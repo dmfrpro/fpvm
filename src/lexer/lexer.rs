@@ -18,13 +18,29 @@ pub struct Lexer {
     pos: Position,
 }
 
-impl Lexer {
-    pub fn new_empty() -> Self {
+impl Default for Lexer {
+    fn default() -> Self {
         Self {
             input: String::new(),
             pos: Position::new(),
         }
     }
+}
+
+impl Iterator for Lexer {
+
+    type Item = Result<Token, LexError>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.next_token() {
+            Ok(Some(tok)) => Some(Ok(tok)),
+            Ok(None) => None,
+            Err(e) => Some(Err(e)),
+        }
+    }
+}
+
+impl Lexer {
 
     pub fn new(input: String) -> Self {
         Self {
@@ -42,9 +58,14 @@ impl Lexer {
 
     pub fn collect_tokens(&mut self) -> Result<Vec<Token>, LexError> {
         let mut out = Vec::new();
-        while let Some(tok) = self.next_token()? {
-            out.push(tok);
+
+        for t in self {
+            match t {
+                Ok(tok) => out.push(tok),
+                Err(e) => { return Err(e) }
+            }
         }
+
         Ok(out)
     }
 
@@ -133,7 +154,7 @@ impl Lexer {
     fn read_lexeme(&mut self) -> (String, Position) {
         let mut s = String::new();
         while let Some(c) = self.peek_char() {
-            if is_delim(c) {
+            if is_delimeter(c) {
                 break;
             }
             s.push(c);
@@ -186,13 +207,13 @@ impl Lexer {
         // Checking for the end of a number. If there is no delim then error occurs. To prevent cases such as: '123asd' '123.123abc' ...
         // If after a number we have a non-delimiter, consume the whole junk suffix
         // to avoid producing a second token (e.g. "123abc" -> error + "abc").
-        if self.peek_char().is_some_and(|c| !is_delim(c)) {
+        if self.peek_char().is_some_and(|c| !is_delimeter(c)) {
             // consume all chars until delimeter to achive correct behaviour:
             // input: 123abc
-            // lexer output (wrong): UnexpectedChar('a') Identifier("abc") 
+            // lexer output (wrong): UnexpectedChar('a') Identifier("abc")
             // lexer output (good): InvalidNumber("123abc")
             while let Some(c) = self.peek_char() {
-                if is_delim(c) {
+                if is_delimeter(c) {
                     break;
                 }
                 s.push(c);
@@ -249,7 +270,7 @@ impl Lexer {
 }
 
 // set of characters that are delimeters
-fn is_delim(c: char) -> bool {
+fn is_delimeter(c: char) -> bool {
     c.is_whitespace() || c == '(' || c == ')' || c == '#' || c == '\''
 }
 
