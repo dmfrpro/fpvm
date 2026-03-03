@@ -47,7 +47,11 @@ where
         self.dump_tokens()
     }
 
+<<<<<<< HEAD
     fn dump_tokens(&mut self) -> io::Result<()> {
+=======
+        fn dump_tokens(&mut self) -> io::Result<()> {
+>>>>>>> 5982ccc (Implement Iterator for Lexer and move lexi logic into separate struct)
         for item in self.lexer.by_ref() {
             match item {
                 Ok(tok) => writeln!(self.output, "{:?} {:?}", tok.kind, tok.span)?,
