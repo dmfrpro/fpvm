@@ -33,7 +33,7 @@ pub Program: Result<Node, SyntaxError> = {
 };
 
 Elements: Result<Node, SyntaxError> = {
-    <start:@L> <elems:Element+> <end:@R> => {
+    <start:@L> <elems:Element*> <end:@R> => {
         let result: Result<Vec<Box<Node>>, SyntaxError> = elems
             .into_iter()
             .map(|r| r.map(Box::new))
