@@ -27,6 +27,7 @@ pub enum NodeKind {
     ElementsNode(Vec<Box<Node>>),
     ListNode(Box<Node>),
     ProgramNode(Box<Node>),
+    ErrorNode,
 }
 
 #[derive(Debug)]
@@ -122,6 +123,9 @@ impl Node {
                 writeln!(f, "Program")?;
                 subexpr.fmt_with_indent(f, indent + 2)
             }
+            NodeKind::ErrorNode => {
+                writeln!(f, "Error")
+            }
         }
     }
 }
@@ -169,6 +173,48 @@ impl SyntaxError {
             kind,
             message,
             span,
+        }
+    }
+
+pub fn from_parse_error(
+        err: lalrpop_util::ParseError<
+            crate::lexer::token::Position,
+            crate::lexer::token::TokenKind,
+            SyntaxError,
+        >
+    ) -> Self {
+        match err {
+            lalrpop_util::ParseError::InvalidToken { location } => {
+                SyntaxError::new(
+                    SyntaxErrorKind::InvalidToken,
+                    None,
+                    MultilinePosition::from_position(location),
+                )
+            }
+            lalrpop_util::ParseError::UnrecognizedEof { location, expected } => {
+                SyntaxError::new(
+                    SyntaxErrorKind::UnrecognizedEof,
+                    Some(format!("Expected: {}", expected.join(", "))),
+                    MultilinePosition::from_position(location),
+                )
+            }
+            lalrpop_util::ParseError::UnrecognizedToken { token, expected } => {
+                let (start, found, end) = token;
+                SyntaxError::new(
+                    SyntaxErrorKind::UnexpectedToken,
+                    Some(format!("Found: {:?}. Expected: {}", found, expected.join(", "))),
+                    MultilinePosition::from_positions(start, end),
+                )
+            }
+            lalrpop_util::ParseError::ExtraToken { token } => {
+                let (start, found, end) = token;
+                SyntaxError::new(
+                    SyntaxErrorKind::ExtraToken,
+                    Some(format!("Found: {:?}", found)),
+                    MultilinePosition::from_positions(start, end),
+                )
+            }
+            lalrpop_util::ParseError::User { error } => error,
         }
     }
 }

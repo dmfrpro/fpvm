@@ -1,3 +1,5 @@
+use crate::lexer::LexErrorKind;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Position {
     pub offset: usize,
@@ -62,4 +64,7 @@ pub enum TokenKind {
     Null,
 
     Identifier(String),
+
+    // invalid token for parser recovery
+    Invalid(LexErrorKind),
 }

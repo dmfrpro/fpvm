@@ -1,6 +1,6 @@
 use super::token::{Position, Span, Token, TokenKind};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum LexErrorKind {
     UnexpectedChar(char),
     InvalidNumber(String),
@@ -28,20 +28,14 @@ impl Default for Lexer {
 }
 
 impl Iterator for Lexer {
-
-    type Item = Result<Token, LexError>;
+    type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-        match self.next_token() {
-            Ok(Some(tok)) => Some(Ok(tok)),
-            Ok(None) => None,
-            Err(e) => Some(Err(e)),
-        }
+        self.next_token()
     }
 }
 
 impl Lexer {
-
     pub fn new(input: String) -> Self {
         Self {
             input,
@@ -56,24 +50,21 @@ impl Lexer {
         }
     }
 
-    pub fn collect_tokens(&mut self) -> Result<Vec<Token>, LexError> {
+    pub fn collect_tokens(&mut self) -> Vec<Token> {
         let mut out = Vec::new();
 
-        for t in self {
-            match t {
-                Ok(tok) => out.push(tok),
-                Err(e) => { return Err(e) }
-            }
+        for tok in self {
+            out.push(tok)
         }
 
-        Ok(out)
+        out
     }
 
-    pub fn next_token(&mut self) -> Result<Option<Token>, LexError> {
+    pub fn next_token(&mut self) -> Option<Token> {
         self.skip_ws_and_comments();
 
         if self.pos.offset >= self.input.len() {
-            return Ok(None);
+            return None;
         }
 
         let start = self.pos.clone();
@@ -97,37 +88,48 @@ impl Lexer {
                 || ((c == '-' || c == '+')
                     && self.peek_nth_char(1).is_some_and(|n| n.is_ascii_digit())) =>
             {
-                let (kind, end) = self.read_number()?;
-                return Ok(Some(Token {
-                    kind,
-                    span: Span { start, end },
-                }));
+                match self.read_number() {
+                    Ok((kind, end)) => {
+                        return Some(Token {
+                            kind,
+                            span: Span { start, end },
+                        });
+                    }
+                    Err(err) => {
+                        return Some(Token {
+                            kind: TokenKind::Invalid(err.kind),
+                            span: err.span,
+                        });
+                    }
+                }
             }
 
             _ => {
                 let (lexeme, end) = self.read_lexeme();
-                let kind = classify_lexeme(&lexeme).map_err(|k| LexError {
-                    kind: k,
-                    span: Span {
-                        start: start.clone(),
-                        end: end.clone(),
-                    },
-                })?;
-
-                return Ok(Some(Token {
-                    kind,
-                    span: Span { start, end },
-                }));
+                match classify_lexeme(&lexeme) {
+                    Ok(kind) => {
+                        return Some(Token{
+                            kind,
+                            span: Span { start, end }
+                        })
+                    }
+                    Err(kind) => {
+                        return Some(Token{
+                            kind:TokenKind::Invalid(kind),
+                            span: Span { start, end }
+                        })
+                    }
+                }
             }
         };
 
-        Ok(Some(Token {
+        Some(Token {
             kind: tok,
             span: Span {
                 start,
                 end: self.pos.clone(),
             },
-        }))
+        })
     }
 
     fn skip_ws_and_comments(&mut self) {
