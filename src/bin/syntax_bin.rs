@@ -5,7 +5,7 @@ use compiler::syntax::parse_syntax;
 
 fn main() {
     let mut src = String::new();
-    
+
     match io::stdin().read_to_string(&mut src) {
         Ok(_) => {}
         Err(e) => {
@@ -33,27 +33,4 @@ fn main() {
             eprintln!("{}", err);
         }
     }
-    
-
 }
-
-    // match lx.collect_tokens() {
-    //     Ok(tokens) => {
-    //         let parse_result = parse_syntax(tokens);
-
-    //         match parse_result {
-    //             Ok(node) => {
-    //                 println!("Successful parse:\n{}", node);
-    //             }
-    //             Err(syntax_error) => {
-    //                 eprintln!("{}", syntax_error);
-    //             }
-    //         }
-            
-    //     }
-
-    //     Err(e) => {
-    //         eprintln!("lex error: {:?}", e)
-    //     }
-    // }
-
