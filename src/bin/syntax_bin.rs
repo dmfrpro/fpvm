@@ -18,19 +18,25 @@ fn main() {
     let mut lx = Lexer::new(src);
     let (ast, errors) = parse_syntax(lx.collect_tokens());
 
-    match ast {
-        Some(node) => {
-            println!("Successful parse:\n{}", node);
-        }
-        None => {
-            eprintln!("Empty ast");
+    if errors.is_empty() {
+        println!("Parse successful!");
+    }
+    else {
+        
+        if !errors.is_empty() {
+            eprintln!("Parse failed!");
+            for err in errors {
+                eprintln!("{}", err);
+            }
         }
     }
 
-    if !errors.is_empty() {
-        eprintln!("ERRORS:");
-        for err in errors {
-            eprintln!("{}", err);
+    match ast {
+        Some(node) => {
+            println!("AST:\n{}", node);
+        }
+        None => {
+            eprintln!("AST not available.");
         }
     }
 }
