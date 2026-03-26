@@ -1,8 +1,8 @@
 use lalrpop_util::{ErrorRecovery, ParseError, lalrpop_mod};
 lalrpop_mod!(pub grammar, "/syntax/grammar.rs");
 
-use crate::lexer::{Token, TokenKind, Position};
-use crate::syntax::{Node, SyntaxError, SyntaxErrorKind, MultilinePosition};
+use crate::lexer::{Position, Token, TokenKind};
+use crate::syntax::{MultilinePosition, Node, SyntaxError, SyntaxErrorKind};
 
 pub fn parse_syntax(tokens: Vec<Token>) -> (Option<Node>, Vec<SyntaxError>) {
     let token_iter = tokens
@@ -15,9 +15,9 @@ pub fn parse_syntax(tokens: Vec<Token>) -> (Option<Node>, Vec<SyntaxError>) {
     let ast = match parser.parse(&mut recoveries, token_iter) {
         Ok(node) => Some(node),
         Err(parse_error) => {
-            recoveries.push(ErrorRecovery { 
-                error: parse_error, 
-                dropped_tokens: Vec::new() 
+            recoveries.push(ErrorRecovery {
+                error: parse_error,
+                dropped_tokens: Vec::new(),
             });
             None
         }

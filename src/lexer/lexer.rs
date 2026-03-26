@@ -36,7 +36,6 @@ impl Iterator for Lexer {
 }
 
 impl Lexer {
-
     pub fn new(input: String) -> Self {
         Self {
             input,
@@ -109,16 +108,16 @@ impl Lexer {
                 let (lexeme, end) = self.read_lexeme();
                 match classify_lexeme(&lexeme) {
                     Ok(kind) => {
-                        return Some(Token{
+                        return Some(Token {
                             kind,
-                            span: Span { start, end }
-                        })
+                            span: Span { start, end },
+                        });
                     }
                     Err(kind) => {
-                        return Some(Token{
-                            kind:TokenKind::Invalid(kind),
-                            span: Span { start, end }
-                        })
+                        return Some(Token {
+                            kind: TokenKind::Invalid(kind),
+                            span: Span { start, end },
+                        });
                     }
                 }
             }

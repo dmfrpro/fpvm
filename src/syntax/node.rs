@@ -154,8 +154,8 @@ impl Display for SyntaxErrorKind {
             SyntaxErrorKind::UnexpectedToken => "UnexpectedToken",
             SyntaxErrorKind::InvalidToken => "InvalidToken",
             SyntaxErrorKind::UnrecognizedEof => "UnrecognizedEof",
-            SyntaxErrorKind::ExtraToken => "ExtraToken",  
-        }; 
+            SyntaxErrorKind::ExtraToken => "ExtraToken",
+        };
         write!(f, "{}", message)
     }
 }
@@ -176,33 +176,33 @@ impl SyntaxError {
         }
     }
 
-pub fn from_parse_error(
+    pub fn from_parse_error(
         err: lalrpop_util::ParseError<
             crate::lexer::token::Position,
             crate::lexer::token::TokenKind,
             SyntaxError,
-        >
+        >,
     ) -> Self {
         match err {
-            lalrpop_util::ParseError::InvalidToken { location } => {
-                SyntaxError::new(
-                    SyntaxErrorKind::InvalidToken,
-                    None,
-                    MultilinePosition::from_position(location),
-                )
-            }
-            lalrpop_util::ParseError::UnrecognizedEof { location, expected } => {
-                SyntaxError::new(
-                    SyntaxErrorKind::UnrecognizedEof,
-                    Some(format!("Expected: {}", expected.join(", "))),
-                    MultilinePosition::from_position(location),
-                )
-            }
+            lalrpop_util::ParseError::InvalidToken { location } => SyntaxError::new(
+                SyntaxErrorKind::InvalidToken,
+                None,
+                MultilinePosition::from_position(location),
+            ),
+            lalrpop_util::ParseError::UnrecognizedEof { location, expected } => SyntaxError::new(
+                SyntaxErrorKind::UnrecognizedEof,
+                Some(format!("Expected: {}", expected.join(", "))),
+                MultilinePosition::from_position(location),
+            ),
             lalrpop_util::ParseError::UnrecognizedToken { token, expected } => {
                 let (start, found, end) = token;
                 SyntaxError::new(
                     SyntaxErrorKind::UnexpectedToken,
-                    Some(format!("Found: {:?}. Expected: {}", found, expected.join(", "))),
+                    Some(format!(
+                        "Found: {:?}. Expected: {}",
+                        found,
+                        expected.join(", ")
+                    )),
                     MultilinePosition::from_positions(start, end),
                 )
             }
@@ -222,7 +222,13 @@ pub fn from_parse_error(
 impl Display for SyntaxError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.message.is_some() {
-            writeln!(f, "{}: {} at {}", self.kind, self.message.clone().unwrap(), self.span)
+            writeln!(
+                f,
+                "{}: {} at {}",
+                self.kind,
+                self.message.clone().unwrap(),
+                self.span
+            )
         } else {
             writeln!(f, "{} at {}", self.kind, self.span)
         }
@@ -278,11 +284,19 @@ impl fmt::Display for MultilinePosition {
                 write!(f, "at line {}, column {}", self.start_line, self.start_col)
             } else {
                 // Range on one line
-                write!(f, "at line {}, columns {}-{}", self.start_line, self.start_col, self.end_col)
+                write!(
+                    f,
+                    "at line {}, columns {}-{}",
+                    self.start_line, self.start_col, self.end_col
+                )
             }
         } else {
             // Multi‑line range
-            write!(f, "from line {}:{} to line {}:{}", self.start_line, self.start_col, self.end_line, self.end_col)
+            write!(
+                f,
+                "from line {}:{} to line {}:{}",
+                self.start_line, self.start_col, self.end_line, self.end_col
+            )
         }
     }
 }

@@ -14,7 +14,7 @@ impl Position {
             col: 1,
             line: 1,
         }
-    }  
+    }
 }
 
 impl Default for Position {
