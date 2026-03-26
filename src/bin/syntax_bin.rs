@@ -20,14 +20,10 @@ fn main() {
 
     if errors.is_empty() {
         println!("Parse successful!");
-    }
-    else {
-        
-        if !errors.is_empty() {
-            eprintln!("Parse failed!");
-            for err in errors {
-                eprintln!("{}", err);
-            }
+    } else {
+        eprintln!("Parse failed!");
+        for err in errors {
+            eprintln!("{}", err);
         }
     }
 
