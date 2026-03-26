@@ -1,6 +1,6 @@
 use std::io::{self, Read};
 
-use compier::lexer::{Lexer};
+use compiler::lexer::Lexer;
 
 fn main() {
     let mut src = String::new();
@@ -16,15 +16,7 @@ fn main() {
     println!("src string: {}", src);
     let mut lx = Lexer::new(src);
 
-    match lx.collect_tokens() {
-        Ok(tokens) => {
-            for tok in tokens {
-                println!("{:?} {:?}", tok.kind, tok.span)
-            }
-        }
-
-        Err(e) => {
-            eprintln!("lex error: {:?}", e)
-        }
+    for tok in lx.collect_tokens() {
+        println!("{:?} {:?}", tok.kind, tok.span)
     }
 }

@@ -1,0 +1,112 @@
+use crate::syntax::node::{Node, NodeKind, SyntaxErrorKind, SyntaxError, MultilinePosition};
+use crate::lexer::token::{TokenKind, Position};
+use crate::lexer::{LexErrorKind};
+
+use lalrpop_util::{ErrorRecovery, ParseError};
+
+grammar<'err>(errors: &'err mut Vec<ErrorRecovery<Position, TokenKind, SyntaxError>>);
+
+extern {
+    type Error = SyntaxError;
+    type Location = Position;
+
+    enum TokenKind {
+        "(" => TokenKind::LParen,
+        ")" => TokenKind::RParen,
+        "'" => TokenKind::QuoteSign,
+        "quote" => TokenKind::QuoteKeyword,
+        "setq" => TokenKind::Setq,
+        "func" => TokenKind::Func,
+        "lambda" => TokenKind::Lambda,
+        "prog" => TokenKind::Prog,
+        "cond" => TokenKind::Cond,
+        "while" => TokenKind::While,
+        "return" => TokenKind::Return,
+        "break" => TokenKind::Break,
+        "integer" => TokenKind::Integer(<String>),
+        "real" => TokenKind::Real(<String>),
+        "bool" => TokenKind::Bool(<bool>),
+        "null" => TokenKind::Null,
+        "identifier" => TokenKind::Identifier(<String>),
+        "invalid" => TokenKind::Invalid(<LexErrorKind>),
+    }
+}
+
+pub Program: Node = {
+    <start:@L> <elems:Elements> <end:@R> => Node::new(NodeKind::ProgramNode(Box::new(elems)), (start, end)),
+};
+
+Elements: Node = {
+    <start:@L> <elems:Element*> <end:@R> => {
+        Node::new(NodeKind::ElementsNode(elems.into_iter().map(Box::new).collect()),
+        (start, end))
+    },
+}
+
+List: Node = {
+    SpecialForm,
+    <start:@L> "(" <elems: Elements> ")" <end:@R> => Node::new(NodeKind::ListNode(Box::new(elems)), (start, end)),
+}
+
+Identifier: Node = {
+    <start:@L> <name:"identifier"> <end:@R> => Node::new(NodeKind::Identifier(name), (start, end)),
+}
+
+Element: Node = {
+    <start:@L> "'" <elem: Element> <end:@R> => Node::new(NodeKind::QuoteNode(Box::new(elem)), (start, end)),
+    Literal,
+    Identifier,
+    List,
+
+    <start:@L> <err:!> <end:@R> => {
+        errors.push(err);
+        Node::new(
+            NodeKind::ErrorNode,
+            (start, end), //(start, end),
+        )
+    },
+}
+
+Literal: Node = {
+    <start:@L> <val:"integer"> <end:@R> =>? {
+        val.parse::<i64>()
+            .map(|v| Node::new(NodeKind::IntNode(v), (start, end)))
+            .map_err(|_| ParseError::User {
+                error: SyntaxError::new(
+                    SyntaxErrorKind::InvalidNumber, 
+                    Some(val), 
+                    MultilinePosition::from_positions(start, end))
+            })
+
+    },
+    <start:@L> <val:"real"> <end:@R> =>? {
+            val.parse::<f64>()
+            .map(|v| Node::new(NodeKind::RealNode(v), (start, end)))
+            .map_err(|_| ParseError::User {
+                error: SyntaxError::new(
+                    SyntaxErrorKind::InvalidNumber, 
+                    Some(val), 
+                    MultilinePosition::from_positions(start, end))
+            })
+        },
+    <start:@L> <val:"bool"> <end:@R> => Node::new(NodeKind::BoolNode(val), (start, end)),
+    <start:@L> "null" <end:@R> => Node::new(NodeKind::NullNode, (start, end)),
+}
+
+SpecialForm: Node = {
+    <start:@L> "(" "quote" <elem: Element> ")" <end:@R> => Node::new(NodeKind::QuoteNode(Box::new(elem)), (start, end)),
+    <start:@L> "(" "setq" <name:Identifier> <elem: Element> ")" <end:@R> => Node::new(NodeKind::SetqNode(Box::new(name), Box::new(elem)), (start, end)),
+    <start:@L> "(" "func" <name:Identifier> <list: List> <elem: Element> ")" <end:@R> => Node::new(NodeKind::FuncNode(Box::new(name), Box::new(list), Box::new(elem)), (start, end)),
+    <start:@L> "(" "lambda" <list: List> <elem: Element> ")" <end:@R> => Node::new(NodeKind::LambdaNode(Box::new(list), Box::new(elem)), (start, end)),
+    <start:@L> "(" "prog" <list: List> <elem: Element> ")" <end:@R> => Node::new(NodeKind::ProgNode(Box::new(list), Box::new(elem)), (start, end)),
+    <start:@L> "(" "cond" <elem1: Element> <elem2: Element> <elem3: Element?> ")" <end:@R> => {
+        let elem3_res = match elem3 {
+            Some(x) => Some(Box::new(x)),
+            None => None
+        };
+        Node::new(NodeKind::CondNode(Box::new(elem1), Box::new(elem2), elem3_res), (start, end))
+    },
+    <start:@L> "(" "while" <cond: Element> <body: Element> ")" <end:@R> => Node::new(NodeKind::WhileNode(Box::new(cond), Box::new(body)), (start, end)),
+    <start:@L> "(" "return" <elem: Element> ")" <end:@R> => Node::new(NodeKind::ReturnNode(Box::new(elem)), (start, end)),
+    <start:@L> "(" "break" ")" <end:@R> => Node::new(NodeKind::BreakNode, (start, end)),
+}
