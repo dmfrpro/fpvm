@@ -1,0 +1,2 @@
+(prog () (setq a 1))
+(prog () (setq a 2))

@@ -1,0 +1,4 @@
+(func outer ()
+      (func inner ()
+            (return 1))
+      (inner))

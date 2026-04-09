@@ -1,6 +1,7 @@
 use std::io::{self, Read};
 
 use compiler::lexer::Lexer;
+use compiler::semantics::SemanticAnalyzer;
 use compiler::syntax::parse_syntax;
 
 fn main() {
@@ -30,6 +31,16 @@ fn main() {
     match ast {
         Some(node) => {
             println!("AST:\n{}", node);
+            let analyzer = SemanticAnalyzer::new();
+            let sem_errors = analyzer.analyze(&node);
+            if sem_errors.is_empty() {
+                println!("Semantic analysis passed.");
+            } else {
+                eprintln!("Semantic errors:");
+                for err in sem_errors {
+                    eprintln!("  {:?}", err);
+                }
+            }
         }
         None => {
             eprintln!("AST not available.");

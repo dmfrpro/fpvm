@@ -1,0 +1,4 @@
+(func test (x)
+      (cond (lesseq x 0)
+            0
+            (plus x y)))

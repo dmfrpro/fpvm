@@ -1,0 +1,8 @@
+(func bad1 (a a)
+      (break))
+
+(setq y z)
+
+(return 5)
+
+(func 123 () 42)
