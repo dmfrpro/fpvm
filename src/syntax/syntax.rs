@@ -1,8 +1,8 @@
-use lalrpop_util::{ErrorRecovery, ParseError, lalrpop_mod};
+use lalrpop_util::{ErrorRecovery, lalrpop_mod};
 lalrpop_mod!(pub grammar, "/syntax/grammar.rs");
 
 use crate::lexer::{Position, Token, TokenKind};
-use crate::syntax::{MultilinePosition, Node, SyntaxError, SyntaxErrorKind};
+use crate::syntax::{Node, SyntaxError};
 
 pub fn parse_syntax(tokens: Vec<Token>) -> (Option<Node>, Vec<SyntaxError>) {
     let token_iter = tokens
