@@ -19,6 +19,10 @@ path = "src/bin/lexi.rs"
 name = "syntax_bin" 
 path = "src/bin/syntax_bin.rs"
 
+[[bin]]
+name = "syntax_bin_pipe" 
+path = "src/bin/syntax_bin_pipe.rs"
+
 [dependencies]
 lalrpop-util = { version = "0.23.0" }
 
