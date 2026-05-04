@@ -20,8 +20,8 @@ name = "syntax_bin"
 path = "src/bin/syntax_bin.rs"
 
 [[bin]]
-name = "syntax_bin_pipe" 
-path = "src/bin/syntax_bin_pipe.rs"
+name = "codegen_bin" 
+path = "src/bin/codegen_bin.rs"
 
 [dependencies]
 lalrpop-util = { version = "0.23.0" }

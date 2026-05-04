@@ -1,17 +1,5 @@
 use super::token::{Position, Span, Token, TokenKind};
-
-#[derive(Debug, Clone)]
-pub enum LexErrorKind {
-    UnexpectedChar(char),
-    InvalidNumber(String),
-    InvalidIdentifier(String),
-}
-
-#[derive(Debug)]
-pub struct LexError {
-    pub kind: LexErrorKind,
-    pub span: Span,
-}
+use super::error::{LexError, LexErrorKind};
 
 pub struct Lexer {
     input: String,
