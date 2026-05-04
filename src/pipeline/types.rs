@@ -49,6 +49,12 @@ impl fmt::Display for DiagnosticLevel {
 
 impl fmt::Display for Diagnostic {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "{}:{}", self.level, self.message)
+        write!(f, "Diagnostic[{}]: \"{}\"", self.level, self.message)
+    }
+}
+
+pub fn print_diagnostics(diagnostics: Vec<Diagnostic>) {
+    for err in diagnostics {
+        eprintln!("{}", err);
     }
 }

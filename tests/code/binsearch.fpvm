@@ -2,7 +2,7 @@
 # divide always return real
 
 (func length (lst) '(
-        (func inner-length (lst res) (cond (isnull (head lst)) (res) (inner-length ((tail (lst)) (plus res 1))))) lst 0
+        (func inner_length (lst res) (cond (isnull (head lst)) (res) (inner_length ((tail (lst)) (plus res 1))))) lst 0
     )
 )
 (func isempty (lst) (isnull (head lst)))
@@ -20,20 +20,24 @@
 (
     binsearch (lst v) (
         prog (l r mid)
-            (setq l 0)
-            (setq r (minus (length lst) 1))
             (
-                while (greater (minus r - l) 1) (
-                    prog ()
-                        (setq mid (intdiv (r + l) 2))
-                        (
-                            cond (greater v (getbyindex lst mid))
-                                (setq l mid)
-                                (setq r mid)
-                        )
+                (setq l 0)
+                (setq r (minus (length lst) 1))
+                (
+                    while (greater (minus r l) 1) (
+                        prog ()
+                            (
+                            (setq mid (intdiv (plus r l) 2))
+                            (
+                                cond (greater v (getbyindex lst mid))
+                                    (setq l mid)
+                                    (setq r mid)
+                            )
+                            )
+                    )
                 )
+                (return (cond (equal v (getbyindex lst l)) l -1))
             )
-            (return (cond (equal v (getbyindex lst l)) l -1))
     )
 )
 

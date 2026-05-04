@@ -6,7 +6,8 @@ use crate::semantics::SemanticAnalyzer;
 use crate::stages::types::{CheckedProgram, ParsedProgram};
 pub fn semantic_stage(prog: ParsedProgram) -> StageOutput<CheckedProgram> {
     let analyzer = SemanticAnalyzer::new();
-    let sem_errors = analyzer.analyze(&prog.ast);
+    
+    let (sem_errors, symbol_table) = analyzer.analyze_table(&prog.ast);
 
     let diagnostics: Vec<Diagnostic> = sem_errors
         .into_iter()
@@ -17,5 +18,5 @@ pub fn semantic_stage(prog: ParsedProgram) -> StageOutput<CheckedProgram> {
         return StageOutput::error(diagnostics);
     }
     
-    StageOutput::ok(CheckedProgram { ast: prog.ast })
+    StageOutput::ok(CheckedProgram { ast: prog.ast, symbol_table })
 }

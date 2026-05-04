@@ -2,7 +2,7 @@
 # divide always return real
 
 (func length (lst) '(
-        (func inner-length (lst res) (cond (isnull (head lst)) (res) (inner-length ((tail (lst)) (plus res 1))))) lst 0
+        (func inner_length (lst res) (cond (isnull (head lst)) (res) (inner_length ((tail (lst)) (plus res 1))))) lst 0
     )
 )
 

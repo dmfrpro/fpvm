@@ -1,5 +1,6 @@
 use std::fmt;
 use crate::syntax::node::Node;
+use crate::semantics::scope::SymbolTable;
 
 pub struct Source {
     pub text: String,
@@ -19,6 +20,7 @@ pub struct ParsedProgram {
 #[derive(Debug)]
 pub struct CheckedProgram {
     pub ast: Node,
+    pub symbol_table: SymbolTable,
 }
 
 impl fmt::Display for ParsedProgram {
@@ -30,7 +32,9 @@ impl fmt::Display for ParsedProgram {
 
 impl fmt::Display for CheckedProgram {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "CheckedProgram:\nAST:{}", self.ast)?;
+        writeln!(f, "------- CheckedProgram -------")?;
+        writeln!(f, "AST: {}", self.ast)?;
+        writeln!(f, "table: {}", self.symbol_table)?;
         Ok(())
     }
 }
