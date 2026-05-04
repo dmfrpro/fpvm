@@ -7,9 +7,11 @@
     func addelement (res value) (
         cond (isempty res) (tuple value 1) (
             prog (x xs)
+                (
                 (setq x (head res))
                 (setq xs (tail res))
                 (return (cond (equal (first x) value) (cons (tuple value (plus (second x) 1) xs))))
+                )
         )
     )
 )
@@ -18,9 +20,11 @@
     func counthelper (lst res) (
          cond (isempty lst) (res) (
             prog (x xs)
+                (
                 (setq x (head lst))
                 (setq xs (tail lst))
                 (return (counthelper xs (addelement res x)))
+                )
          )
     )
 )

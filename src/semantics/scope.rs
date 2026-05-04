@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use std::fmt;
+
 #[derive(Debug, Clone, Default)]
 pub struct Scope {
     symbols: HashMap<String, SymbolInfo>,
@@ -41,6 +43,7 @@ impl Scope {
     }
 }
 
+#[derive(Debug)]
 pub struct SymbolTable {
     scopes: Vec<Scope>,
 }
@@ -79,5 +82,53 @@ impl SymbolTable {
 
     pub fn insert(&mut self, name: String, info: SymbolInfo) -> Result<(), SymbolInfo> {
         self.current_scope_mut().insert(name, info)
+    }
+}
+
+
+impl fmt::Display for SymbolKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            SymbolKind::Variable => write!(f, "variable"),
+            SymbolKind::Function => write!(f, "function"),
+            SymbolKind::Parameter => write!(f, "parameter"),
+        }
+    }
+}
+
+impl fmt::Display for SymbolInfo {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{} defined at {:?}",
+            self.kind,
+            self.defined_at
+        )
+    }
+}
+
+impl fmt::Display for Scope {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.symbols.is_empty() {
+            writeln!(f, "<empty>")?;
+            return Ok(());
+        }
+
+        for (name, info) in &self.symbols {
+            writeln!(f, "{}: {}", name, info)?;
+        }
+
+        Ok(())
+    }
+}
+
+impl fmt::Display for SymbolTable {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for (index, scope) in self.scopes.iter().enumerate() {
+            writeln!(f, "scope #{}:", index)?;
+            write!(f, "{}", scope)?;
+        }
+
+        Ok(())
     }
 }
