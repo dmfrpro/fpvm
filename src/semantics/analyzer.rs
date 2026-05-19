@@ -201,8 +201,9 @@ impl SemanticAnalyzer {
                 self.pop_context();
                 self.symbol_table.exit_scope();
             }
-            NodeKind::ProgNode(_, body_node) => {
+            NodeKind::ProgNode(vars, body_node) => {
                 self.symbol_table.enter_scope();
+                self.add_parameters_to_scope(vars);
                 self.visit_node(body_node);
                 self.symbol_table.exit_scope();
             }
