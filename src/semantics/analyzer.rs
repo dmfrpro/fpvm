@@ -134,21 +134,7 @@ impl SemanticAnalyzer {
                 // Skip strings
             }
             NodeKind::SetqNode(id_node, expr) => {
-                if let NodeKind::Identifier(name) = &id_node.kind {
-                    let info = SymbolInfo {
-                        defined_at: id_node.span.clone(),
-                        kind: SymbolKind::Variable,
-                    };
-                    if let Err(existing) = self.symbol_table.insert(name.clone(), info) {
-                        self.error(
-                            SemanticErrorKind::DuplicateDefinition(name.clone()),
-                            id_node.span.clone(),
-                            Some(format!(
-                                "variable '{}' already defined at {}",
-                                name, existing.defined_at
-                            )),
-                        );
-                    }
+                if let NodeKind::Identifier(_) = &id_node.kind {
                     self.visit_node(expr);
                 } else {
                     self.error(
