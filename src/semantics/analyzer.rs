@@ -131,7 +131,7 @@ impl SemanticAnalyzer {
                 }
             }
             NodeKind::QuoteNode(_sub) => {
-                // Skip strings
+                self.visit_node(_sub);
             }
             NodeKind::SetqNode(id_node, expr) => {
                 if let NodeKind::Identifier(_) = &id_node.kind {
