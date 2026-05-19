@@ -194,6 +194,17 @@ impl SemanticAnalyzer {
                 self.symbol_table.exit_scope();
             }
             NodeKind::CondNode(cond, then_expr, else_opt) => {
+                if let NodeKind::ListNode(t) = &cond.kind {
+                    if let NodeKind::ElementsNode(a) = &t.kind {
+                        if a.len() == 0 {
+                            self.error(
+                                SemanticErrorKind::EmptyCond,
+                                cond.span.clone(),
+                                Some("Cond expression should not be empty".to_string())
+                            );
+                        }
+                    }
+                }
                 self.visit_node(cond);
                 self.visit_node(then_expr);
                 if let Some(else_node) = else_opt {
@@ -201,6 +212,18 @@ impl SemanticAnalyzer {
                 }
             }
             NodeKind::WhileNode(cond, body) => {
+                if let NodeKind::ListNode(t) = &cond.kind {
+                    if let NodeKind::ElementsNode(a) = &t.kind {
+                        if a.len() == 0 {
+                            self.error(
+                                SemanticErrorKind::EmptyCond,
+                                cond.span.clone(),
+                                Some("While condition should not be empty".to_string())
+                            );
+                        }
+                    }
+                }
+
                 self.visit_node(cond);
                 self.push_context(self.is_inside_function(), true);
                 self.visit_node(body);

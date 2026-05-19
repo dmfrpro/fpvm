@@ -9,6 +9,7 @@ pub enum SemanticErrorKind {
     InvalidSetqTarget,
     InvalidFuncName,
     InvalidLambdaParams,
+    EmptyCond,
 }
 
 #[derive(Debug)]
