@@ -1,0 +1,5 @@
+(func sum (a b)
+    (plus a b)
+)
+
+(setq result (sum 1 2))

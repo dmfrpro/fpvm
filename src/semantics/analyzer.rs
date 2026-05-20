@@ -42,11 +42,6 @@ impl SemanticAnalyzer {
         self.errors
     }
 
-    pub fn analyze_table(mut self, root: &Node) -> (Vec<SemanticError>, SymbolTable) {
-        self.visit_node(root);
-        (self.errors, self.symbol_table)
-    }
-
     fn error(&mut self, kind: SemanticErrorKind, span: MultilinePosition, msg: Option<String>) {
         self.errors.push(SemanticError::new(kind, span, msg));
     }

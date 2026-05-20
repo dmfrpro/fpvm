@@ -1,0 +1,5 @@
+(setq add_one
+    (lambda (x)
+        (plus x 1)
+    )
+)
