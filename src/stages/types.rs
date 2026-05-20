@@ -1,6 +1,6 @@
 use std::fmt;
 use crate::syntax::node::Node;
-use crate::semantics::scope::SymbolTable;
+use crate::symbol_table::SymbolTable;
 
 pub struct Source {
     pub text: String,

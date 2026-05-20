@@ -23,6 +23,10 @@ path = "src/bin/syntax_bin.rs"
 name = "codegen_bin" 
 path = "src/bin/codegen_bin.rs"
 
+[[bin]]
+name = "dump_sb_tool" 
+path = "src/bin/dump_symbol_tables.rs"
+
 [dependencies]
 lalrpop-util = { version = "0.23.0" }
 

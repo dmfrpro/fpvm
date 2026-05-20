@@ -1,0 +1,17 @@
+(setq global_limit 100)
+
+(func clamp (x)
+    (cond (less x 0)
+        0
+        (cond (greater x global_limit)
+            global_limit
+            x
+        )
+    )
+)
+
+(func process (value)
+    (prog (result)
+        (setq result (clamp value))
+    )
+)

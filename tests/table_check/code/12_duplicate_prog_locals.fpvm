@@ -1,0 +1,5 @@
+(func bad ()
+    (prog (x x)
+        x
+    )
+)

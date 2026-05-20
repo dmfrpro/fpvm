@@ -1,0 +1,10 @@
+(setq x 10)
+(setq y 20)
+
+(func inc (a)
+    (plus a 1)
+)
+
+(func sum (a b)
+    (plus a b)
+)
