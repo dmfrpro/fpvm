@@ -37,7 +37,7 @@ impl<'a> CodeGenerator<'a> {
         let function_to_call = &nodes[0];
 
         for arg in nodes[1..].iter() {
-            self.compile_expr(arg, function);
+            self.compile_expr(arg, function)?;
         }
 
         let function_info = self.find_function_by_owner_span(function_to_call)?;

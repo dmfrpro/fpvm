@@ -26,20 +26,6 @@ impl Brancher {
     pub(crate) fn get_label(&self, label_suffix: String) -> String {
         format!("{}_{}_{}", self.branch_type.to_string(), self.index, label_suffix)
     }
-
-    fn is_cond(&self) -> bool {
-        match self.branch_type {
-            BranchType::Cond => true,
-            _ => false
-        }
-    }
-
-    fn is_while(&self) -> bool {
-        match self.branch_type {
-            BranchType::While => true,
-            _ => false
-        }
-    }
 }
 
 impl BrancherStack {

@@ -32,7 +32,7 @@ impl<'a> CodeGenerator<'a> {
             NodeKind::CondNode(c, t, e) => self.compile_cond(c, t, e, function),
             NodeKind::WhileNode(c, b) => self.compile_while(c, b, function),
             NodeKind::ReturnNode(value) => {
-                self.compile_expr(value, function);
+                self.compile_expr(value, function)?;
                 function.emit(super::Instruction::Ret);
                 Ok(())
             }
