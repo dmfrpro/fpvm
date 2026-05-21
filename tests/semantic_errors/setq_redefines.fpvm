@@ -1,0 +1,2 @@
+(func inc (x)
+      (setq x (plus x 1)))

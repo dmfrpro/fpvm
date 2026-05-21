@@ -235,7 +235,7 @@ impl Display for SyntaxError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MultilinePosition {
     pub start_col: usize,
     pub start_line: usize,

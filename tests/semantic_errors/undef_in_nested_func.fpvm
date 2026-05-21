@@ -1,0 +1,3 @@
+(func outer (x)
+      (func inner (y)
+            (plus x z)))
