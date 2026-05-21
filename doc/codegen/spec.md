@@ -160,7 +160,7 @@ setglobal <var_label>
 ```
 `load*` instructions load a variable value onto the stack.
 
-`set*` instructions store the top stack value and leave it on the stack. This makes setq return the assigned value.
+`set*` instructions store the top stack value and rempve it from the stack.
 
 Example:
 ```
@@ -168,22 +168,15 @@ Example:
 loadint 1
 setglobal global_x_0
 ```
-After setglobal, the stack still contains 1, so (setq x 1) evaluates to 1.
+After setglobal, the stack doesn't contain 1.
 
-If set* consumed the value, the stack would become empty:
-```
-loadint 1
-setglobal global_x_0
-ret
-```
-Then ret would have no value to return. Codegen would have to reload the value:
+set* consumes the value, the stack would became empty, then to return value we need to load this value from storage:
 ```
 loadint 1
 setglobal global_x_0
 loadglobal global_x_0
 ret
 ```
-So leaving the assigned value on the stack makes `setq` simpler to generate bytecode.
 
 ### Arithmetic
 

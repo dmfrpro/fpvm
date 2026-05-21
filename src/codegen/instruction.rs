@@ -43,7 +43,7 @@ pub enum Instruction {
     CondJump(String),
 
     // Calls
-    Call { label: String, argc: usize },
+    Call(String),
 
     CallStack { argc: usize },
 

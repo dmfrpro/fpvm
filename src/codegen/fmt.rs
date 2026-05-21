@@ -41,7 +41,7 @@ impl fmt::Display for Instruction {
             Instruction::Jump(label) => write!(f, "jump {}", label),
             Instruction::CondJump(label) => write!(f, "condjump {}", label),
 
-            Instruction::Call { label, argc } => write!(f, "call {} {}", label, argc),
+            Instruction::Call(label) => write!(f, "call {}", label),
             Instruction::CallStack { argc } => write!(f, "callstack {}", argc),
 
             Instruction::Pop => write!(f, "pop"),
