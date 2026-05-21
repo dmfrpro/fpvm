@@ -29,31 +29,39 @@ impl<'a> CodeGenerator<'a> {
             NodeKind::ProgNode(_, _) => Err(CodegenError::UnsupportedNode {
                 message: "not implemented".to_string(),
             }),
-            NodeKind::CondNode(_, _, _) => Err(CodegenError::UnsupportedNode {
-                message: "not implemented".to_string(),
-            }),
-            NodeKind::WhileNode(_, _) => Err(CodegenError::UnsupportedNode {
-                message: "not implemented".to_string(),
-            }),
-            NodeKind::ReturnNode(_) => Err(CodegenError::UnsupportedNode {
-                message: "not implemented".to_string(),
-            }),
-            NodeKind::BreakNode => Err(CodegenError::UnsupportedNode {
-                message: "not implemented".to_string(),
-            }),
-
-            NodeKind::ElementNode(_) => Err(CodegenError::UnsupportedNode {
-                message: "not implemented".to_string(),
-            }),
-            NodeKind::ElementsNode(_) => Err(CodegenError::UnsupportedNode {
-                message: "not implemented".to_string(),
-            }),
-            NodeKind::ListNode(_) => Err(CodegenError::UnsupportedNode {
-                message: "not implemented".to_string(),
-            }),
-            NodeKind::ProgramNode(_) => Err(CodegenError::UnsupportedNode {
-                message: "not implemented".to_string(),
-            }),
+            NodeKind::CondNode(c, t, e) => self.compile_cond(c, t, e, function),
+            NodeKind::WhileNode(c, b) => self.compile_while(c, b, function),
+            NodeKind::ReturnNode(value) => {
+                self.compile_expr(value, function)?;
+                function.emit(super::Instruction::Ret);
+                Ok(())
+            }
+            NodeKind::BreakNode => {
+                if let Some(label) = self.loop_context.peek_brancher() {
+                    function.emit(super::Instruction::Jump(label.to_string()));
+                    Ok(())
+                } else {
+                        Err(CodegenError::UnsupportedNode {
+                        message: "not implemented".to_string(),
+                    })
+                }
+            }
+            NodeKind::ElementNode(subnode) => self.compile_expr(subnode, function),
+            NodeKind::ElementsNode(subnodes) => {
+                for subnode in subnodes {
+                    self.compile_expr(subnode, function)?;
+                }
+                Ok(())
+            }
+            NodeKind::ListNode(exprs) => {
+                // Function call
+                let subnodes = match &exprs.kind {
+                    NodeKind::ElementsNode(sub) => sub,
+                    _ => return Err(CodegenError::InternalError { message: "Unexpected node type".to_string() }),
+                };
+                self.compile_func_call(subnodes, function)
+            }
+            NodeKind::ProgramNode(exprs) => self.compile_expr(exprs, function),
 
             NodeKind::ErrorNode => Err(CodegenError::InvalidNode {
                 message: "cannot generate code for ErrorNode".to_string(),

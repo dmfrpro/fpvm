@@ -31,4 +31,18 @@ impl<'a> CodeGenerator<'a> {
 
         Ok(())
     }
+
+    pub(crate) fn compile_func_call(&mut self, nodes: &Vec<Box<Node>>, function: &mut BytecodeFunction) -> Result<(), CodegenError> {
+        // Function call
+        let function_to_call = &nodes[0];
+
+        for arg in nodes[1..].iter() {
+            self.compile_expr(arg, function)?;
+        }
+
+        let function_info = self.find_function_by_owner_span(function_to_call)?;
+        function.emit(Instruction::LoadFunc(function_info.label.clone()));
+        function.emit(Instruction::CallStack { argc: nodes.len() - 1 });
+        Ok(())
+    }
 }

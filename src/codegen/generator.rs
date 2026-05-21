@@ -1,3 +1,4 @@
+use crate::codegen::brancher::BrancherStack;
 use crate::symbol_table::{
     FunctionId, FunctionInfo, FunctionKind, ScopeId, ScopeKind, SymbolId, SymbolKind, SymbolTable,
 };
@@ -10,6 +11,8 @@ pub struct CodeGenerator<'a> {
 
     pub(crate) current_function_id: Option<FunctionId>,
     pub(crate) current_scope_id: Option<ScopeId>,
+
+    pub(crate) loop_context: BrancherStack,
 }
 
 impl<'a> CodeGenerator<'a> {
@@ -18,6 +21,7 @@ impl<'a> CodeGenerator<'a> {
             symbol_table,
             current_function_id: None,
             current_scope_id: None,
+            loop_context: BrancherStack { index: 0, loop_branches: vec![] },
         }
     }
 
