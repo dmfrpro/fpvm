@@ -8,7 +8,7 @@
 (func isempty (lst) (isnull (head lst)))
 
 (
-    getbyindex (lst i) (
+    func getbyindex (lst i) (
         cond (or (isempty lst) (less i 0)) (null) (
             cond (equal i 0) (head lst) (
                 getbyindex (tail lst) (minus i 1)
@@ -18,7 +18,7 @@
 )
 
 (
-    binsearch (lst v) (
+    func binsearch (lst v) (
         prog (l r mid)
             (
                 (setq l 0)
@@ -27,7 +27,7 @@
                     while (greater (minus r l) 1) (
                         prog ()
                             (
-                            (setq mid (intdiv (plus r l) 2))
+                            (setq mid (divide (plus r l) 2))
                             (
                                 cond (greater v (getbyindex lst mid))
                                     (setq l mid)
