@@ -1,249 +1,429 @@
-# Language F - Semantic Specification (Draft)
+# Codegen Specification
 
-## 1. Overview
+## 1. Top-level execution
 
-F is an interpreted functional language based on S-expressions.  
-A program is a sequence of elements evaluated from first to the last Element.
+Language F has no user-defined `main`.
 
-The result of a program is the result of evaluating the last element.
+A program is a sequence of top-level expressions. Codegen wraps them into an internal function:
+
+```
+__top_level
+```
+
+Bytecode starts with:
+
+```
+entry __top_level
+```
+
+The VM begins execution from this function.
 
 ---
 
-## 2. Program Execution
+## 3. Symbol table
 
-A program is a sequence of elements:
+The symbol table is produced before codegen and describes all declared names, scopes, functions, arguments, locals, globals, and captures.
 
-Program = E1 E2 ... En
+See the `symbol_table` module for concrete types:
+- `Symbol`
+- `Scope`
+- `FunctionInfo`
+
+Each symbol has a unique VM label:
+```
+x      -> global_x_0
+a      -> arg_a_1
+tmp    -> local_tmp_2
+sum    -> func_sum_3
+```
+
+Codegen uses these labels in bytecode instructions.
+
+---
+
+## 4. Captures
+
+A capture is an external non-global variable used inside a nested function or lambda.
+
+Example:
+
+```
+(func outer (x)
+    (func inner (y)
+        (plus x y)
+    )
+)
+```
+
+Here `inner` captures `x`.
+
+Captures are stored in `FunctionInfo.captures`.
+
+A lambda does not always capture variables:
+
+```
+(lambda (x)
+    (plus x 1)
+)
+```
+
+Here `x` is the lambda argument, so captures are empty.
+
+---
+
+## 5. Bytecode structure
+
+A bytecode program contains:
+
+```
+global <var_label>
+entry <function_label>
+
+func <function_label> {
+    capture <var_label>
+    arg <var_label>
+    local <var_label>
+
+    <instructions>
+    ret
+}
+```
+
+Example:
+
+```
+global global_x_0
+
+entry __top_level
+
+func __top_level {
+    loadint 1
+    setglobal global_x_0
+    ret
+}
+```
+
+---
+
+## 6. Stack model
+
+The VM is stack-based.
+
+Example:
+
+```
+loadint 1
+loadint 2
+add
+```
 
 Execution:
-- Evaluate elements in order
-- Final result = eval(En)
+
+```
+stack = []
+loadint 1  -> [1]
+loadint 2  -> [1, 2]
+add        -> [3]
+```
+
+Operations take arguments from the stack and push results back.
 
 ---
 
-## 3. Evaluation Model
+## 7. Instructions
 
-Evaluation is defined by a function:
+### Constants
 
-eval(element, env) -> EvalResult
+```
+loadnull
+loadint <value>
+loadreal <value>
+loadbool <value>
+loadatom <name>
+loadfunc <function_label>
+makelist <n>
+```
 
-Where:
+### Variables
 
-EvalResult =
-- Value
-- Return(Value)
-- Break
+```
+loadlocal <var_label>
+loadarg <var_label>
+loadcapture <var_label>
+loadglobal <var_label>
 
----
+setlocal <var_label>
+setarg <var_label>
+setcapture <var_label>
+setglobal <var_label>
+
+```
+`load*` instructions load a variable value onto the stack.
+
+`set*` instructions store the top stack value and leave it on the stack. This makes setq return the assigned value.
+
+Example:
+```
+(setq x 1)
+loadint 1
+setglobal global_x_0
+```
+After setglobal, the stack still contains 1, so (setq x 1) evaluates to 1.
+
+If set* consumed the value, the stack would become empty:
+```
+loadint 1
+setglobal global_x_0
+ret
+```
+Then ret would have no value to return. Codegen would have to reload the value:
+```
+loadint 1
+setglobal global_x_0
+loadglobal global_x_0
+ret
+```
+So leaving the assigned value on the stack makes `setq` simpler to generate bytecode.
+
+### Arithmetic
+
+```
+add
+sub
+mul
+div
+mod
+```
+
+### Comparisons
+
+```
+eq
+neq
+less
+leq
+greater
+geq
+```
+
+### Control flow
+
+```
+<label>:
+jump <label>
+condjump <label>
+```
+
+`condjump` pops a boolean and jumps if it is true.
+
+### Calls
+
+```
+call <function_label>
+callstack <argc>
+```
+
+`call` is used for statically known functions.
+`callstack` is used when the function value is computed at runtime.
 
 
-## 4. Basic Evaluation Rules
+### Stack
 
-### 4.1 Literals
+```
+pop
+```
 
-eval(literal, env) = literal
+Used to discard intermediate expression results.
 
----
+### Return
 
-### 4.2 Atoms
+```
+ret
+```
 
-eval(atom, env) =
-- value bound to atom in env
-- error if not found
-
----
-
-### 4.3 Lists
-
-eval((f arg1 arg2 ...), env):
-
-1. If f is a special form -> use special rules
-2. Otherwise:
-   - f_val = eval(f, env)
-   - args = eval(arg1), eval(arg2), ... (left to right)
-   - apply(f_val, args)
-
----
-
-## 5. Function Application
-
-apply(f, args):
-
-
-## 8. Environments
-
-An **environment** is a stack of scopes.
-
-**Scope** is Identifier -> Value
-
-Rules:
-- Lookup proceeds from the innermost scope outward.
-- If a name is not found, evaluation fails.
-- New scopes are created by: func, lambda, prog.
-- Scopes are destroyed after exiting their construct.
-
----
-
-## 7. Runtime Values
-
-The language operates on the following types of values:
-- Integer
-- Real
-- Boolean
-- Null
-- Atom
-- List
-- Function
-
-Notes:
-- Atoms may represent variables or symbolic values.
-- Lists are ordered sequences of values.
-- Functions are first-class values.
-
----
-
-
-## 8. Special Forms
-
-### 8.1 quote
-
-Syntax:
-(quote x) or 'x
-
-Semantics:
-- Returns x without evaluation
-
----
-
-### 8.2 setq
-
-Syntax:
-(setq name expr)
-
-Semantics:
-1. name is not evaluated
-2. value = eval(expr, env)
-3. bind *name -> value* in current scope
-4. return value
-
----
-
-### 8.3 func
-
-Syntax:
-(func name (param1, params2, ...) body)
-
-Semantics:
-1. Create function:
-   - parameters = param1, params2, ...
-   - body       = body
-   - closure    = current environment
-2. Bind *name -> function* in current scope
-3. Return the function
+`ret` expects exactly one value on the current frame stack. It removes the current frame and transfers this value to the caller frame stack. If the current frame is the entry frame, this value becomes the program result.
 
 ---
 
-### 8.4 lambda
+## 8. Codegen rules
 
-Syntax:
-(lambda (param1, params2, ...) body)
+### Literals
 
-Semantics:
-- Returns a function value with:
-  - parameters = param1, params2, ...
-  - body
-  - closure environment
+```
+null     -> loadnull
+true     -> loadbool true
+false    -> loadbool false
+1        -> loadint 1
+1.5      -> loadreal 1.5
+```
 
----
+### Identifier
 
-### 8.5 prog
+Codegen looks up the identifier in the current scope:
 
-Syntax:
-(prog (var1, var2, ...) expr1 expr2 ...)
+```
+Global symbol              -> loadglobal
+Argument of current func   -> loadarg
+Local of current func      -> loadlocal
+Symbol from outer function -> loadcapture
+Function symbol            -> loadfunc
+```
 
-Semantics:
-1. Create new scope
-2. Initialize vars with null
-3. Evaluate expressions sequentially
-4. If *return* encountered -> propagate
-5. Returns last expression result or null
+### `setq`
 
----
+```
+(setq x expr)
+```
 
-### 8.6 cond
+Generates:
 
-Syntax:
-(cond condition then [else])
+```
+<compile expr>
+set* <x_label>
+```
 
-Semantics:
-1. Evaluate condition
-2. If true -> evaluate then
-3. Else:
-   - if else exists -> evaluate else
-   - otherwise return null
+The concrete `set*` instruction depends on the resolved symbol (set`local`, set`capture`, set`arg`, set`global`).
 
----
+### Sequence
 
-### 8.7 while
+Only the last expression result remains on the stack.
 
-Syntax:
-(while condition body)
+```
+<compile expr1>
+pop
+<compile expr2>
+pop
+<compile expr3>
+```
 
-Semantics:
-Loop:
-1. Evaluate condition
-2. If false -> stop
-3. Evaluate body
-   - if *break* -> exit loop
-   - if *return* -> propagate
-4. Repeat
+### Builtins
 
-Result: null
+```
+plus      -> add
+minus     -> sub
+times     -> mul
+divide    -> div
+mod       -> mod
 
----
+equal     -> eq
+nonequal  -> neq
+less      -> less
+lesseq    -> leq
+greater   -> greater
+greatereq -> geq
+```
 
-### 8.8 return
+### `func`
 
-Syntax:
-(return expr)
+Creates a named function symbol and a bytecode function.
 
-Semantics:
-- value = eval(expr)
-- return Return(value)
+As expression, it loads the function value:
 
----
+```
+loadfunc <function_label>
+```
 
-### 8.9 break
+### `lambda`
 
-Syntax:
-(break)
+Creates an anonymous function.
 
-Semantics:
-- return Break
+As expression:
 
----
+```
+loadfunc <lambda_label>
+```
 
-### Built-in function:
-- Validate argument count and types
-- Execute operation
-- Return result
+### Function call
 
-### User-defined function:
+```
+(f arg1 arg2)
+```
 
-Given Function(params, body, closure):
+If `f` is a known function symbol:
 
-1. Create new scope
-2. Bind params -> args
-3. Evaluate body in new scope
-4. If Return(v) -> return v
-5. Otherwise return result
+```
+<compile arg1>
+<compile arg2>
+call <function_label>
+```
 
----
+Otherwise, callstack is used when the target function is computed at runtime and stored on the stack:
 
-## 8. Control Flow Propagation
+```
+<compile f>
+<compile arg1>
+<compile arg2>
+callstack 2
+```
 
-Rules:
-- Return(value) propagates until function/prog boundary
-- Break propagates until while
+### `cond`
+
+```
+<compile condition>
+condjump then_label
+
+<compile else>
+jump end_label
+
+then_label:
+<compile then>
+
+end_label:
+```
+
+If `else` is absent, generate `loadnull`. Because every expression must leave exactly one value on the stack.
+
+### `while`
+
+```
+while_start:
+<compile condition>
+condjump while_body
+jump while_end
+
+while_body:
+<compile body>
+pop
+jump while_start
+
+while_end:
+loadnull
+```
+
+### `return`
+
+```
+<compile expr>
+ret
+```
+
+### `break`
+
+```
+jump <nearest_while_end_label>
+```
+
+### `quote`
+
+Quote returns data without evaluation.
+
+```
+'x
+```
+
+```
+loadatom x
+```
+
+```
+'(plus 1 2)
+```
+
+```
+loadatom plus
+loadint 1
+loadint 2
+makelist 3
+```
 
 ---

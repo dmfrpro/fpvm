@@ -44,9 +44,17 @@ setcapture <varlabel> -
 setarg <varlabel>
 setglobal <varlabel>
 call <funclabel> - calls <funclabel> with args on top of stack (checks number of args to call)
-callstack - calls function from top of stack with args
+callstack <argc> - calls function from top of stack with args
 ret - returns single elem from stack (if more than one -> runtime error) 
+### Return
 
+```text
+ret
+```
+
+Returns the top stack value from the current function.
+
+он возвращает значение. При этом он удаляет это значение со стека или нет и как вообще происходит возврат. Покаи на примере
 ### Globals:
 	global <varlabel>
 
