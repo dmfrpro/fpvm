@@ -2,7 +2,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use compiler::pipeline::pipeline::Pipeline;
-use compiler::stages::{lexer_stage, read_from_file, semantic_stage, syntax_stage};
+use compiler::stages::{lexer_stage, read_from_file, semantic_stage, syntax_stage, codegen_stage};
 
 fn read_input_dir_from_args() -> PathBuf {
     std::env::args()
@@ -56,7 +56,8 @@ fn main() {
         let pipeline = Pipeline::new(read_from_file)
             .then(lexer_stage)
             .then(syntax_stage)
-            .then(semantic_stage);
+            .then(semantic_stage)
+            .then(codegen_stage);
 
         let output = pipeline.run(&path.clone());
 
