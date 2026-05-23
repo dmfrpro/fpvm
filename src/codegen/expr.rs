@@ -26,9 +26,9 @@ impl<'a> CodeGenerator<'a> {
             }
 
             // part 1
-            NodeKind::ProgNode(_, _) => Err(CodegenError::UnsupportedNode {
-                message: "not implemented".to_string(),
-            }),
+            NodeKind::ProgNode(locals, body) => {
+                self.compile_prog(node, locals, body, function)
+            },
             NodeKind::CondNode(c, t, e) => self.compile_cond(c, t, e, function),
             NodeKind::WhileNode(c, b) => self.compile_while(c, b, function),
             NodeKind::ReturnNode(value) => {
@@ -48,9 +48,17 @@ impl<'a> CodeGenerator<'a> {
             }
             NodeKind::ElementNode(subnode) => self.compile_expr(subnode, function),
             NodeKind::ElementsNode(subnodes) => {
-                for subnode in subnodes {
+                for (index, subnode) in subnodes.iter().enumerate() {
                     self.compile_expr(subnode, function)?;
+
+                    if index + 1 != subnodes.len() {
+                        function.emit(super::Instruction::Pop);
+                    }
                 }
+                if (subnodes.is_empty()) {
+                    function.emit(super::Instruction::LoadNull);
+                }
+
                 Ok(())
             }
             NodeKind::ListNode(exprs) => {
