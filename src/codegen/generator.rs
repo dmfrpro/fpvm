@@ -21,7 +21,10 @@ impl<'a> CodeGenerator<'a> {
             symbol_table,
             current_function_id: None,
             current_scope_id: None,
-            loop_context: BrancherStack { index: 0, loop_branches: vec![] },
+            loop_context: BrancherStack {
+                index: 0,
+                loop_branches: vec![],
+            },
         }
     }
 
@@ -74,7 +77,7 @@ impl<'a> CodeGenerator<'a> {
             }
 
             FunctionKind::Named | FunctionKind::Lambda => {
-                let owner_node = self.find_node_by_owner_span(ast, function_info)?;
+                let owner_node = self.find_function_owner_node(ast, function_info)?;
                 let body_node = self.function_body_node(owner_node)?;
 
                 self.compile_expr(body_node, &mut function)?;
@@ -281,7 +284,7 @@ impl<'a> CodeGenerator<'a> {
             })
     }
 
-    fn find_node_by_owner_span<'b>(
+    fn find_function_owner_node<'b>(
         &self,
         root: &'b Node,
         function: &FunctionInfo,
@@ -292,42 +295,64 @@ impl<'a> CodeGenerator<'a> {
             });
         };
 
-        Self::find_node_by_span(root, owner_span).ok_or_else(|| CodegenError::InternalError {
-            message: format!("AST node not found for function '{}'", function.label),
+        Self::find_function_node_by_span(root, owner_span).ok_or_else(|| {
+            CodegenError::InternalError {
+                message: format!(
+                    "AST function node not found for function '{}'",
+                    function.label
+                ),
+            }
         })
     }
 
-    fn find_node_by_span<'b>(node: &'b Node, span: &MultilinePosition) -> Option<&'b Node> {
-        if Self::same_span(&node.span, span) {
-            return Some(node);
-        }
-
+    fn find_function_node_by_span<'b>(
+        node: &'b Node,
+        span: &MultilinePosition,
+    ) -> Option<&'b Node> {
         match &node.kind {
+            NodeKind::FuncNode(name, args, body) => {
+                if Self::same_span(&node.span, span) {
+                    return Some(node);
+                }
+
+                Self::find_function_node_by_span(name, span)
+                    .or_else(|| Self::find_function_node_by_span(args, span))
+                    .or_else(|| Self::find_function_node_by_span(body, span))
+            }
+
+            NodeKind::LambdaNode(args, body) => {
+                if Self::same_span(&node.span, span) {
+                    return Some(node);
+                }
+
+                Self::find_function_node_by_span(args, span)
+                    .or_else(|| Self::find_function_node_by_span(body, span))
+            }
+
             NodeKind::QuoteNode(inner)
             | NodeKind::ElementNode(inner)
             | NodeKind::ListNode(inner)
             | NodeKind::ProgramNode(inner)
-            | NodeKind::ReturnNode(inner) => Self::find_node_by_span(inner, span),
+            | NodeKind::ReturnNode(inner) => Self::find_function_node_by_span(inner, span),
 
             NodeKind::SetqNode(left, right)
-            | NodeKind::FuncNode(left, right, _)
-            | NodeKind::LambdaNode(left, right)
             | NodeKind::ProgNode(left, right)
-            | NodeKind::WhileNode(left, right) => {
-                Self::find_node_by_span(left, span).or_else(|| Self::find_node_by_span(right, span))
-            }
+            | NodeKind::WhileNode(left, right) => Self::find_function_node_by_span(left, span)
+                .or_else(|| Self::find_function_node_by_span(right, span)),
 
-            NodeKind::CondNode(cond, then_node, else_node) => Self::find_node_by_span(cond, span)
-                .or_else(|| Self::find_node_by_span(then_node, span))
-                .or_else(|| {
-                    else_node
-                        .as_deref()
-                        .and_then(|else_node| Self::find_node_by_span(else_node, span))
-                }),
+            NodeKind::CondNode(cond, then_node, else_node) => {
+                Self::find_function_node_by_span(cond, span)
+                    .or_else(|| Self::find_function_node_by_span(then_node, span))
+                    .or_else(|| {
+                        else_node
+                            .as_deref()
+                            .and_then(|else_node| Self::find_function_node_by_span(else_node, span))
+                    })
+            }
 
             NodeKind::ElementsNode(elements) => elements
                 .iter()
-                .find_map(|element| Self::find_node_by_span(element, span)),
+                .find_map(|element| Self::find_function_node_by_span(element, span)),
 
             NodeKind::NullNode
             | NodeKind::BoolNode(_)
