@@ -20,7 +20,7 @@ impl SemanticAnalyzer {
 
         for builtin in [
             "+", "-", "*", "/", "lesseq", "greater", "equal", "times", "minus", "plus", "mod",
-            "print", "eval",
+            "print", "eval", "less",
         ] {
             analyzer
                 .symbol_table

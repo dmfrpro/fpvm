@@ -6,6 +6,12 @@ use crate::syntax::node::{MultilinePosition, Node, NodeKind};
 
 use super::{BytecodeFunction, BytecodeProgram, CodegenError, Instruction};
 
+#[derive(Debug, Clone)]
+pub(crate) enum ReturnTarget {
+    Function,
+    Prog(String),
+}
+
 pub struct CodeGenerator<'a> {
     pub(crate) symbol_table: &'a SymbolTable,
 
@@ -13,6 +19,8 @@ pub struct CodeGenerator<'a> {
     pub(crate) current_scope_id: Option<ScopeId>,
 
     pub(crate) loop_context: BrancherStack,
+
+    pub(crate) return_targets: Vec<ReturnTarget>,
 }
 
 impl<'a> CodeGenerator<'a> {
@@ -25,6 +33,7 @@ impl<'a> CodeGenerator<'a> {
                 index: 0,
                 loop_branches: vec![],
             },
+            return_targets: Vec::new(),
         }
     }
 
@@ -73,18 +82,31 @@ impl<'a> CodeGenerator<'a> {
 
         match function_info.kind {
             FunctionKind::TopLevel => {
-                self.compile_expr(ast, &mut function)?;
+                self.return_targets.push(ReturnTarget::Function);
+
+                self.compile_top_level_script(ast, &mut function)?;
+
+                // top level returns null
+                function.emit(Instruction::LoadNull);
+
+                self.return_targets.pop();
             }
 
             FunctionKind::Named | FunctionKind::Lambda => {
+                self.return_targets.push(ReturnTarget::Function);
+
                 let owner_node = self.find_function_owner_node(ast, function_info)?;
                 let body_node = self.function_body_node(owner_node)?;
 
                 self.compile_expr(body_node, &mut function)?;
+
+                self.return_targets.pop();
             }
         }
 
-        function.emit(Instruction::Ret);
+        if !matches!(function.body.last(), Some(Instruction::Ret)) {
+            function.emit(Instruction::Ret);
+        }
 
         self.current_function_id = previous_function;
         self.current_scope_id = previous_scope;
@@ -145,6 +167,10 @@ impl<'a> CodeGenerator<'a> {
             .ok_or_else(|| CodegenError::InternalError {
                 message: "missing current function".to_string(),
             })
+    }
+
+    pub(crate) fn is_top_level(&self) -> bool {
+        self.current_function_id == Some(self.symbol_table.entry_function_id)
     }
 
     pub(crate) fn find_function_by_owner_span(

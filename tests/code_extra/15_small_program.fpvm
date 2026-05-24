@@ -12,6 +12,8 @@
 
 (func process (value)
     (prog (result)
-        (setq result (clamp value))
+        (
+            (setq result (clamp value))
+        )
     )
 )

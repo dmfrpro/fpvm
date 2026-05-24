@@ -10,7 +10,8 @@ pub(crate) struct BrancherStack {
 
 pub(crate) enum BranchType {
     Cond,
-    While
+    While,
+    Prog,
 }
 
 impl ToString for  BranchType {
@@ -18,6 +19,7 @@ impl ToString for  BranchType {
         match self {
             BranchType::Cond => "cond",
             BranchType::While => "while",
+            BranchType::Prog => "prog",
         }.to_string()
     }
 }

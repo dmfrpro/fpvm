@@ -50,6 +50,9 @@ pub enum Instruction {
     // Stack
     Pop,
 
+    // Stdout
+    Stdout,
+
     // Return
     Ret,
 }

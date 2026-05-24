@@ -1,7 +1,11 @@
 (setq x 1)
 
 (func f ()
-    (prog ()
-        (setq x 2)
+    (prog () 
+        (
+            (setq x 2)
+            (return x)
+        )
+        
     )
 )

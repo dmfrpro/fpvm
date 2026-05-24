@@ -1,5 +1,17 @@
-(func f (a b)
-    (prog (x y)
-        (setq x (plus a b))
+(func f_err (a b)
+    (prog (x y) 
+        (
+            (prog (k) (setq k 5))
+            (setq x (plus a k))
+        )
+    )
+)
+
+# result (foo null null)
+(func f_1 (a b)
+    (
+        (prog (k) ((return foo)))
+        (prog (k) ((setq k 5)))
+        (prog (k) ((setq k 5)))
     )
 )

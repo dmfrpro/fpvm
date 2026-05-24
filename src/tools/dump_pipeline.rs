@@ -58,9 +58,7 @@ fn main() {
             .then(syntax_stage)
             .then(semantic_stage)
             .then(codegen_stage);
-
         let output = pipeline.run(&path.clone());
-
         let mut report = String::new();
 
         report.push_str(&format!("Input file: {}\n", path.display()));

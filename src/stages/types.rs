@@ -1,4 +1,5 @@
 use std::fmt;
+use crate::codegen::BytecodeProgram;
 use crate::syntax::node::Node;
 use crate::symbol_table::SymbolTable;
 
@@ -23,6 +24,11 @@ pub struct CheckedProgram {
     pub symbol_table: SymbolTable,
 }
 
+pub struct GeneratedProg {
+    pub ast: Node,
+    pub bytecode: BytecodeProgram,
+}
+
 impl fmt::Display for ParsedProgram {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "ParsedProgram:\nAST:{}", self.ast)?;
@@ -35,6 +41,15 @@ impl fmt::Display for CheckedProgram {
         writeln!(f, "------- CheckedProgram -------")?;
         writeln!(f, "AST: {}", self.ast)?;
         writeln!(f, "table: {}", self.symbol_table)?;
+        Ok(())
+    }
+}
+
+impl fmt::Display for GeneratedProg {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "------- CheckedProgram -------")?;
+        writeln!(f, "AST: {}", self.ast)?;
+        writeln!(f, "Bytecode:\n{}", self.bytecode.to_string())?;
         Ok(())
     }
 }

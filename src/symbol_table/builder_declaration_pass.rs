@@ -1,8 +1,8 @@
 use crate::syntax::{Node, NodeKind};
 
 use super::SymbolTableError;
-use super::builder::{SymbolTableBuilder, SpanKey};
-use super::table::{SymbolKind, ScopeKind, FunctionKind};
+use super::builder::{SpanKey, SymbolTableBuilder};
+use super::table::{FunctionKind, ScopeKind, SymbolKind};
 
 impl SymbolTableBuilder {
     pub(super) fn visit_node(&mut self, node: &Node) {
@@ -95,11 +95,8 @@ impl SymbolTableBuilder {
             return;
         };
 
-        if self
-            .table
-            .lookup_in_scope(self.current_scope(), name)
-            .is_some()
-        {
+        // find in stacked scopes
+        if self.table.lookup(self.current_scope(), name).is_some() {
             return;
         }
 
