@@ -1,0 +1,12 @@
+(setq x 10)
+x
+
+(func printer (value) 
+    (prog () 
+        (
+            value
+        )
+    )
+)
+
+(printer x)

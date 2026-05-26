@@ -1,0 +1,31 @@
+entry __top_level
+
+func __top_level {
+    loadint -10
+    call func_sign_0
+    stdout
+    loadint 10
+    call func_sign_0
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_sign_0 {
+    arg arg_x_1
+
+    loadarg arg_x_1
+    loadint 0
+    less
+    condjump cond_1_then
+    loadint 1
+    jump cond_1_end
+    cond_1_then:
+    loadint -1
+    cond_1_end:
+    ret
+}
+
+
+

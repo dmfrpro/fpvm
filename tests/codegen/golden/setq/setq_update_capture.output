@@ -1,0 +1,36 @@
+entry __top_level
+
+func __top_level {
+    call func_outer_0
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_outer_0 {
+    local local_x_1
+
+    loadint 1
+    setlocal local_x_1
+    call func_inner_2
+    stdout
+    loadlocal local_x_1
+    jump prog_1_end
+    loadnull
+    prog_1_end:
+    ret
+}
+
+
+func func_inner_2 {
+    capture local_x_1
+
+    loadint 2
+    setcapture local_x_1
+    loadcapture local_x_1
+    ret
+}
+
+
+

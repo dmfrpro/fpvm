@@ -1,5 +1,0 @@
-'(func hidden (x)
-    (setq y 1)
-)
-
-(setq real_value 10)

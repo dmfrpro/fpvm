@@ -1,0 +1,18 @@
+entry __top_level
+
+func __top_level {
+    call func_f_0
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_f_0 {
+    loadnull
+    prog_1_end:
+    ret
+}
+
+
+

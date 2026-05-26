@@ -1,0 +1,23 @@
+(prog (i)
+    (
+        (setq i 0)
+
+        (while true
+            (prog ()
+                (
+                    (setq i (plus i 1))
+
+                    (cond (greater i 5)
+                        (break)
+                        (cond (equal i 3)
+                            100
+                            200
+                        )
+                    )
+                )
+            )
+        )
+
+        i
+    )
+)

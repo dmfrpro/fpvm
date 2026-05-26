@@ -1,0 +1,28 @@
+entry __top_level
+
+func __top_level {
+    loadint 1
+    loadint 2
+    loadint 3
+    call func_sum3_0
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_sum3_0 {
+    arg arg_a_1
+    arg arg_b_2
+    arg arg_c_3
+
+    loadarg arg_a_1
+    loadarg arg_b_2
+    add
+    loadarg arg_c_3
+    add
+    ret
+}
+
+
+

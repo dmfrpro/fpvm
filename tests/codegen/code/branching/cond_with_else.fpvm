@@ -1,0 +1,9 @@
+(func sign (x)
+    (cond (less x 0)
+        -1
+        1
+    )
+)
+
+(sign -10)
+(sign 10)

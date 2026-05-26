@@ -1,0 +1,52 @@
+entry __top_level
+
+func __top_level {
+    local local_i_0
+
+    loadint 0
+    setlocal local_i_0
+    while_2_cond:
+    loadbool true
+    condjump while_2_body
+    jump while_2_end
+    while_2_body:
+    loadlocal local_i_0
+    loadint 1
+    add
+    setlocal local_i_0
+    loadlocal local_i_0
+    loadint 5
+    greater
+    condjump cond_4_then
+    loadlocal local_i_0
+    loadint 3
+    eq
+    condjump cond_5_then
+    loadint 200
+    jump cond_5_end
+    cond_5_then:
+    loadint 100
+    cond_5_end:
+    jump cond_4_end
+    cond_4_then:
+    jump while_2_end
+    cond_4_end:
+    stdout
+    loadnull
+    prog_3_end:
+    pop
+    jump while_2_cond
+    while_2_end:
+    loadnull
+    pop
+    loadlocal local_i_0
+    stdout
+    loadnull
+    prog_1_end:
+    stdout
+    loadnull
+    ret
+}
+
+
+

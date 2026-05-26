@@ -1,0 +1,24 @@
+entry __top_level
+
+func __top_level {
+    loadnull
+    ret
+}
+
+
+func func_test_0 {
+    while_1_cond:
+    loadbool false
+    condjump while_1_body
+    jump while_1_end
+    while_1_body:
+    loadint 1
+    pop
+    jump while_1_cond
+    while_1_end:
+    loadnull
+    ret
+}
+
+
+

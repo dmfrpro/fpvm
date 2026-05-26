@@ -1,0 +1,7 @@
+(func outer ()
+    ((func inner ()
+        42
+    ))
+)
+
+(outer)

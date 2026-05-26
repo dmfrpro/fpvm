@@ -1,0 +1,10 @@
+(func add_one (x)
+    (plus x 1)
+)
+
+(prog (x)
+    (
+        (setq x 10)
+        (add_one x)
+    )
+)

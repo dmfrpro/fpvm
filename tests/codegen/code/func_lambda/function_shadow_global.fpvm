@@ -1,0 +1,5 @@
+(func f () 1)
+
+(func outer ()
+    ((func f () 2 ))
+)

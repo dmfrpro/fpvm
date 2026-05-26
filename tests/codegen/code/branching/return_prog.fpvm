@@ -1,0 +1,12 @@
+(func f ()
+    (prog (x)
+        (
+            (setq x 10)
+            (return x)
+            (setq x 20)
+        )
+    )
+)
+
+(f)
+

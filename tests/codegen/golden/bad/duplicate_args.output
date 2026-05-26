@@ -1,0 +1,9 @@
+[FAILED]
+
+Diagnostics:
+[
+    Diagnostic {
+        level: Error,
+        message: "SemanticError { kind: DuplicateDefinition(\"x\"), span: MultilinePosition { start_col: 14, start_line: 1, end_col: 15, end_line: 1 }, message: Some(\"parameter 'x' already defined at at line 1, columns 12-13\") }",
+    },
+]

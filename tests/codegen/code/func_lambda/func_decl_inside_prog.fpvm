@@ -1,0 +1,13 @@
+(func outer ()
+    (prog ()
+        (
+            (func inner ()
+                7
+            )
+
+            (return (inner))
+        )
+    )
+)
+
+(outer)

@@ -1,0 +1,28 @@
+entry __top_level
+
+func __top_level {
+    loadnull
+    ret
+}
+
+
+func func_outer_0 {
+    arg arg_x_1
+
+    loadfunc func_inner_2
+    ret
+}
+
+
+func func_inner_2 {
+    capture arg_x_1
+    arg arg_y_3
+
+    loadcapture arg_x_1
+    loadarg arg_y_3
+    add
+    ret
+}
+
+
+

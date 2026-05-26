@@ -1,0 +1,37 @@
+global global_adder_3
+
+entry __top_level
+
+func __top_level {
+    loadint 5
+    call func_make_adder_0
+    setglobal global_adder_3
+    loadglobal global_adder_3
+    loadint 10
+    callstack 1
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_make_adder_0 {
+    arg arg_x_1
+
+    loadfunc lambda_2
+    ret
+}
+
+
+func lambda_2 {
+    capture arg_x_1
+    arg arg_y_2
+
+    loadcapture arg_x_1
+    loadarg arg_y_2
+    add
+    ret
+}
+
+
+
