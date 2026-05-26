@@ -1,0 +1,17 @@
+global global_x_0
+
+entry __top_level
+
+func __top_level {
+    loadint 10
+    setglobal global_x_0
+    loadatom x
+    stdout
+    loadglobal global_x_0
+    stdout
+    loadnull
+    ret
+}
+
+
+

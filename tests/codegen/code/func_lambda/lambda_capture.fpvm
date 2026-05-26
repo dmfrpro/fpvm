@@ -1,0 +1,7 @@
+(func make_adder (x)
+    (lambda (y)
+        (plus x y)
+    )
+)
+
+((make_adder 5) 10)

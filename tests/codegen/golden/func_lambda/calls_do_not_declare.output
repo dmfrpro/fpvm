@@ -1,0 +1,54 @@
+global global_result_3
+
+entry __top_level
+
+func __top_level {
+    loadint 1
+    loadint 2
+    call func_sum_0
+    setglobal global_result_3
+    loadnull
+    ret
+}
+
+
+func func_sum_0 {
+    arg arg_a_1
+    arg arg_b_2
+
+    loadarg arg_a_1
+    loadarg arg_b_2
+    add
+    ret
+}
+
+
+func func_sum1_4 {
+    arg arg_a_5
+    arg arg_b_6
+    local local_x_8
+
+    loadfunc lambda_3
+    setlocal local_x_8
+    loadlocal local_x_8
+    loadlocal local_x_8
+    loadarg arg_a_5
+    callstack 1
+    loadarg arg_b_6
+    add
+    callstack 1
+    ret
+}
+
+
+func lambda_3 {
+    arg arg_a_7
+
+    loadarg arg_a_7
+    loadint 1
+    add
+    ret
+}
+
+
+

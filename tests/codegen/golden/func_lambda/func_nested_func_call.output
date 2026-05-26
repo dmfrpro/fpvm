@@ -1,0 +1,24 @@
+entry __top_level
+
+func __top_level {
+    call func_outer_0
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_outer_0 {
+    loadfunc func_inner_1
+    callstack 0
+    ret
+}
+
+
+func func_inner_1 {
+    loadint 42
+    ret
+}
+
+
+

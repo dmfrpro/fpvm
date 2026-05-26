@@ -4,11 +4,19 @@ use std::path::{Path, PathBuf};
 use compiler::pipeline::pipeline::Pipeline;
 use compiler::stages::{lexer_stage, read_from_file, semantic_stage, syntax_stage, codegen_stage};
 
-fn read_input_dir_from_args() -> PathBuf {
-    std::env::args()
+fn read_input_dir_from_args() -> (PathBuf, PathBuf) {
+
+    let input_dir = std::env::args()
         .nth(1)
         .map(PathBuf::from)
-        .expect("usage: dump_symbol_tables <input-dir>")
+        .expect("usage: dump_symbol_tables <input-dir> <output-dir(target/output default)>");
+
+    let output_dir = std::env::args()
+    .nth(2)
+    .map(PathBuf::from)
+    .unwrap_or_else(|| PathBuf::from("target/output"));
+
+    (input_dir, output_dir)
 }
 
 fn collect_files(dir: &Path) -> Vec<PathBuf> {
@@ -37,9 +45,12 @@ fn make_output_path(input_dir: &Path, input_file: &Path, output_dir: &Path) -> P
 }
 
 fn main() {
-    let input_dir = &read_input_dir_from_args();
-    let output_dir = Path::new("target/symbol-tables");
+    let (input_dir, output_dir) = &read_input_dir_from_args();
+    // let output_dir = Path::new("target/symbol-tables");
 
+    println!("input_dir:{:?}", input_dir);
+    println!("out_dir:{:?}", output_dir);
+    
     fs::create_dir_all(output_dir)
         .unwrap_or_else(|e| panic!("cannot create output dir {}: {e}", output_dir.display()));
 
@@ -61,14 +72,14 @@ fn main() {
         let output = pipeline.run(&path.clone());
         let mut report = String::new();
 
-        report.push_str(&format!("Input file: {}\n", path.display()));
-        report.push_str(&format!("Output file: {}\n", output_path.display()));
-        report.push_str("\n========================================\n\n");
+        // report.push_str(&format!("Input file: {}\n", path.display()));
+        // report.push_str(&format!("Output file: {}\n", output_path.display()));
+        // report.push_str("\n========================================\n\n");
 
         match output.value {
             Some(value) if output.diagnostics.is_empty() => {
-                report.push_str("[OK]\n\n");
-                report.push_str(&format!("{}\n", value));
+                // report.push_str("[OK]\n\n");
+                report.push_str(&format!("{}\n", value.bytecode));
             }
 
             Some(value) => {

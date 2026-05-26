@@ -1,0 +1,22 @@
+global global_expr_0
+
+entry __top_level
+
+func __top_level {
+    loadint 1
+    loadint 2
+    add
+    stdout
+    loadatom plus
+    loadint 1
+    loadint 2
+    makelist 3
+    setglobal global_expr_0
+    loadglobal global_expr_0
+    stdout
+    loadnull
+    ret
+}
+
+
+

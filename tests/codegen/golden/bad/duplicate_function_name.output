@@ -1,0 +1,9 @@
+[FAILED]
+
+Diagnostics:
+[
+    Diagnostic {
+        level: Error,
+        message: "SemanticError { kind: DuplicateDefinition(\"f\"), span: MultilinePosition { start_col: 7, start_line: 5, end_col: 8, end_line: 5 }, message: Some(\"function 'f' already defined at at line 1, columns 7-8\") }",
+    },
+]

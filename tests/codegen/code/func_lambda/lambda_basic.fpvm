@@ -1,0 +1,19 @@
+(setq add_one
+    (lambda (x)
+        (plus x 1)
+    )
+)
+
+(setq is_answer 
+    (
+        lambda (x) 
+            (
+                (
+                    cond (equal x 42) true false
+                )
+            ) 
+    )
+)
+
+(is_answer 1)
+(is_answer 42)

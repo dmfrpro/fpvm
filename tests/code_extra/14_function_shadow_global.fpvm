@@ -1,7 +1,0 @@
-(setq f 10)
-
-(func outer ()
-    (func f ()
-        1
-    )
-)

@@ -1,0 +1,8 @@
+(func only_negative (x)
+    (cond (less x 0)
+        x
+    )
+)
+
+(only_negative -5)
+(only_negative 5)

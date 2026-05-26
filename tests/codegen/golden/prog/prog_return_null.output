@@ -1,0 +1,24 @@
+entry __top_level
+
+func __top_level {
+    call func_f_0
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_f_0 {
+    local local_x_1
+
+    loadint 10
+    setlocal local_x_1
+    loadlocal local_x_1
+    stdout
+    loadnull
+    prog_1_end:
+    ret
+}
+
+
+

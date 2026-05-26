@@ -1,0 +1,7 @@
+(func make_inc ()
+    (lambda (x)
+        (plus x 1)
+    )
+)
+
+((make_inc) 10)
