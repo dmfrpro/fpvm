@@ -18,3 +18,6 @@ Problems:
 2. return stmt in prog body
 `ReturnOutsideFunction`
 return works only if prog is wrapped in `func` special form
+
+
+3. prog + return iside cond 
