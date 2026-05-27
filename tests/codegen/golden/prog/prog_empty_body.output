@@ -1,15 +1,20 @@
 entry __top_level
 
 func __top_level {
-    call func_f_0
-    stdout
     loadnull
     ret
 }
 
 
 func func_f_0 {
-    loadnull
+    local local_x_1
+
+    loadint 2
+    setlocal local_x_1
+    loadlocal local_x_1
+    pop
+    loadlocal local_x_1
+    jump prog_1_end
     prog_1_end:
     ret
 }

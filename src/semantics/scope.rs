@@ -11,6 +11,7 @@ pub struct Scope {
 pub struct SymbolInfo {
     pub defined_at: crate::syntax::MultilinePosition,
     pub kind: SymbolKind,
+    pub is_prog_local: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -40,6 +41,10 @@ impl Scope {
 
     pub fn contains(&self, name: &str) -> bool {
         self.symbols.contains_key(name)
+    }
+
+    pub fn get(&self, name: &str) -> Option<&SymbolInfo> {
+        self.symbols.get(name)
     }
 }
 
