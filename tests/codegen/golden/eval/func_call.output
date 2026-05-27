@@ -6,6 +6,7 @@ func __top_level {
     loadint 1
     loadint 2
     add
+    eval
     stdout
     loadatom plus
     loadint 1
@@ -13,10 +14,8 @@ func __top_level {
     makelist 3
     setglobal global_expr_0
     loadglobal global_expr_0
+    eval
     stdout
     loadnull
     ret
 }
-
-
-

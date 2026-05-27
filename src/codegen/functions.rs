@@ -42,6 +42,36 @@ impl<'a> CodeGenerator<'a> {
             });
         }
 
+        // Single-element list with a literal: (null), (5), (true) → just the literal
+        // Single-element list with a non-function identifier: (x) → just the value
+        if nodes.len() == 1 {
+            match &nodes[0].kind {
+                NodeKind::NullNode
+                | NodeKind::BoolNode(_)
+                | NodeKind::IntNode(_)
+                | NodeKind::RealNode(_)
+                | NodeKind::QuoteNode(_) => {
+                    return self.compile_expr(&nodes[0], function);
+                }
+                NodeKind::Identifier(name) => {
+                    // If it's not a known function, just return the value
+                    // instead of trying to call it dynamically
+                    if let Ok(symbol_id) = self.lookup_symbol(name) {
+                        if let Some(symbol) = self.symbol_table.symbol(symbol_id) {
+                            if symbol.kind != SymbolKind::Function {
+                                return self.compile_expr(&nodes[0], function);
+                            }
+                        } else {
+                            return self.compile_expr(&nodes[0], function);
+                        }
+                    } else {
+                        return self.compile_expr(&nodes[0], function);
+                    }
+                }
+                _ => {}
+            }
+        }
+
         let callee = &nodes[0];
         let args = &nodes[1..];
         let argc = args.len();
@@ -118,6 +148,9 @@ impl<'a> CodeGenerator<'a> {
             "cons" => (Instruction::Cons, 2),
             "isnull" => (Instruction::IsNull, 1),
             "length" => (Instruction::Length, 1),
+            "or" => (Instruction::Or, 2),
+            "not" => (Instruction::Not, 1),
+            "islist" => (Instruction::IsList, 1),
 
             _ => return Ok(None),
         };
@@ -145,11 +178,14 @@ impl<'a> CodeGenerator<'a> {
             | NodeKind::IntNode(_)
             | NodeKind::RealNode(_)
             | NodeKind::Identifier(_)
-            | NodeKind::ListNode(_) => self.compile_expr(arg, function),
+            | NodeKind::ListNode(_) => self.compile_expr(arg, function)?,
 
-            NodeKind::ElementNode(inner) => self.compile_eval_expr(inner, function),
+            NodeKind::ElementNode(inner) => self.compile_eval_expr(inner, function)?,
 
-            _ => self.compile_expr(arg, function),
+            _ => self.compile_expr(arg, function)?,
         }
+
+        function.emit(Instruction::Eval);
+        Ok(())
     }
 }

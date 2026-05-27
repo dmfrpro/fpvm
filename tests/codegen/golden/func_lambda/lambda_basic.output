@@ -46,6 +46,3 @@ func lambda_2 {
     callstack 0
     ret
 }
-
-
-

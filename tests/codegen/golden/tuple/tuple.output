@@ -1,0 +1,71 @@
+global global_testtuple_7
+global global_testtriple_8
+
+entry __top_level
+
+func __top_level {
+    loadint 1
+    loadbool true
+    call func_tuple_0
+    setglobal global_testtuple_7
+    loadglobal global_testtuple_7
+    call func_first_3
+    stdout
+    loadglobal global_testtuple_7
+    call func_second_5
+    stdout
+    loadreal 1.4
+    loadint 1
+    loadint 2
+    call func_tuple_0
+    call func_tuple_0
+    setglobal global_testtriple_8
+    loadglobal global_testtriple_8
+    call func_first_3
+    stdout
+    loadglobal global_testtriple_8
+    call func_second_5
+    stdout
+    loadglobal global_testtriple_8
+    call func_second_5
+    call func_first_3
+    stdout
+    loadglobal global_testtriple_8
+    call func_second_5
+    call func_second_5
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_tuple_0 {
+    arg arg_a_1
+    arg arg_b_2
+
+    loadarg arg_a_1
+    loadarg arg_b_2
+    loadnull
+    cons
+    cons
+    ret
+}
+
+
+func func_first_3 {
+    arg arg_t_4
+
+    loadarg arg_t_4
+    head
+    ret
+}
+
+
+func func_second_5 {
+    arg arg_t_6
+
+    loadarg arg_t_6
+    tail
+    head
+    ret
+}

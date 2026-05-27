@@ -1,8 +1,6 @@
-(func tuple (first second) '(lambda (res) (res first second)))
-
-(func first (x y) 'x)
-
-(func second (x y) 'y)
+(func tuple (a b) (cons a (cons b null)))
+(func first (t) (head t))
+(func second (t) (head (tail t)))
 
 # Tests
 (setq testtuple (tuple 1 true))

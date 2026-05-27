@@ -1,0 +1,149 @@
+global global_testarr_11
+
+entry __top_level
+
+func __top_level {
+    loadint 1
+    loadint 2
+    loadint 3
+    loadint 4
+    loadint 5
+    makelist 5
+    setglobal global_testarr_11
+    loadglobal global_testarr_11
+    loadglobal global_testarr_11
+    loadint 3
+    call func_binsearch_5
+    call func_getbyindex_2
+    loadint 3
+    eq
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_isempty_0 {
+    arg arg_lst_1
+
+    loadarg arg_lst_1
+    head
+    isnull
+    ret
+}
+
+
+func func_getbyindex_2 {
+    arg arg_lst_3
+    arg arg_i_4
+
+    loadarg arg_lst_3
+    call func_isempty_0
+    loadarg arg_i_4
+    loadint 0
+    less
+    or
+    condjump cond_1_then
+    loadarg arg_i_4
+    loadint 0
+    eq
+    condjump cond_2_then
+    loadarg arg_lst_3
+    tail
+    loadarg arg_i_4
+    loadint 1
+    sub
+    call func_getbyindex_2
+    jump cond_2_end
+    cond_2_then:
+    loadarg arg_lst_3
+    head
+    cond_2_end:
+    jump cond_1_end
+    cond_1_then:
+    loadnull
+    cond_1_end:
+    ret
+}
+
+
+func func_binsearch_5 {
+    arg arg_lst_6
+    arg arg_v_7
+    local local_l_8
+    local local_r_9
+    local local_mid_10
+
+    loadint 0
+    setlocal local_l_8
+    loadlocal local_l_8
+    pop
+    loadarg arg_lst_6
+    length
+    loadint 1
+    sub
+    setlocal local_r_9
+    loadlocal local_r_9
+    pop
+    while_4_cond:
+    loadlocal local_r_9
+    loadlocal local_l_8
+    sub
+    loadint 1
+    greater
+    condjump while_4_body
+    jump while_4_end
+    while_4_body:
+    loadlocal local_r_9
+    loadlocal local_l_8
+    add
+    loadint 2
+    div
+    setlocal local_mid_10
+    loadlocal local_mid_10
+    pop
+    loadarg arg_v_7
+    loadarg arg_lst_6
+    loadlocal local_mid_10
+    call func_getbyindex_2
+    greater
+    condjump cond_6_then
+    loadlocal local_mid_10
+    setlocal local_r_9
+    loadlocal local_r_9
+    jump cond_6_end
+    cond_6_then:
+    loadlocal local_mid_10
+    setlocal local_l_8
+    loadlocal local_l_8
+    cond_6_end:
+    prog_5_end:
+    pop
+    jump while_4_cond
+    while_4_end:
+    loadnull
+    pop
+    loadarg arg_v_7
+    loadarg arg_lst_6
+    loadlocal local_l_8
+    call func_getbyindex_2
+    eq
+    condjump cond_7_then
+    loadarg arg_v_7
+    loadarg arg_lst_6
+    loadlocal local_r_9
+    call func_getbyindex_2
+    eq
+    condjump cond_8_then
+    loadint -1
+    jump cond_8_end
+    cond_8_then:
+    loadlocal local_r_9
+    cond_8_end:
+    jump cond_7_end
+    cond_7_then:
+    loadlocal local_l_8
+    cond_7_end:
+    prog_3_end:
+    ret
+}

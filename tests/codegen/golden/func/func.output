@@ -1,0 +1,19 @@
+entry __top_level
+
+func __top_level {
+    loadint 6
+    call func_square_0
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_square_0 {
+    arg arg_x_1
+
+    loadarg arg_x_1
+    loadarg arg_x_1
+    mul
+    ret
+}

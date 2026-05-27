@@ -23,6 +23,3 @@ func func_sum3_0 {
     add
     ret
 }
-
-
-

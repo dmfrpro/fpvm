@@ -6,9 +6,9 @@ func __top_level {
     loadint 10
     setlocal local_x_2
     loadlocal local_x_2
+    pop
+    loadlocal local_x_2
     call func_add_one_0
-    stdout
-    loadnull
     prog_1_end:
     stdout
     loadnull
@@ -24,6 +24,3 @@ func func_add_one_0 {
     add
     ret
 }
-
-
-

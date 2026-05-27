@@ -25,6 +25,3 @@ func func_fact_0 {
     cond_1_end:
     ret
 }
-
-
-

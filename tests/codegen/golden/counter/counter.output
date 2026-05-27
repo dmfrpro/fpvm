@@ -1,0 +1,165 @@
+entry __top_level
+
+func __top_level {
+    loadint 1
+    loadint 1
+    loadint 1
+    loadint 3
+    loadint 2
+    loadint 4
+    loadint 5
+    loadint 1
+    loadint 1
+    makelist 9
+    call func_count_19
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_tuple_0 {
+    arg arg_a_1
+    arg arg_b_2
+
+    loadarg arg_a_1
+    loadarg arg_b_2
+    loadnull
+    cons
+    cons
+    ret
+}
+
+
+func func_first_3 {
+    arg arg_t_4
+
+    loadarg arg_t_4
+    head
+    ret
+}
+
+
+func func_second_5 {
+    arg arg_t_6
+
+    loadarg arg_t_6
+    tail
+    head
+    ret
+}
+
+
+func func_isempty_7 {
+    arg arg_lst_8
+
+    loadarg arg_lst_8
+    isnull
+    condjump cond_1_then
+    loadarg arg_lst_8
+    head
+    isnull
+    jump cond_1_end
+    cond_1_then:
+    loadbool true
+    cond_1_end:
+    ret
+}
+
+
+func func_addelement_9 {
+    arg arg_res_10
+    arg arg_value_11
+    local local_x_12
+    local local_xs_13
+
+    loadarg arg_res_10
+    call func_isempty_7
+    condjump cond_2_then
+    loadarg arg_res_10
+    head
+    setlocal local_x_12
+    loadlocal local_x_12
+    pop
+    loadarg arg_res_10
+    tail
+    setlocal local_xs_13
+    loadlocal local_xs_13
+    pop
+    loadlocal local_x_12
+    call func_first_3
+    loadarg arg_value_11
+    eq
+    condjump cond_4_then
+    loadlocal local_x_12
+    loadlocal local_xs_13
+    loadarg arg_value_11
+    call func_addelement_9
+    cons
+    jump cond_4_end
+    cond_4_then:
+    loadarg arg_value_11
+    loadlocal local_x_12
+    call func_second_5
+    loadint 1
+    add
+    call func_tuple_0
+    loadlocal local_xs_13
+    cons
+    cond_4_end:
+    jump prog_3_end
+    prog_3_end:
+    jump cond_2_end
+    cond_2_then:
+    loadarg arg_value_11
+    loadint 1
+    call func_tuple_0
+    loadnull
+    cons
+    cond_2_end:
+    ret
+}
+
+
+func func_counthelper_14 {
+    arg arg_lst_15
+    arg arg_res_16
+    local local_x_17
+    local local_xs_18
+
+    loadarg arg_lst_15
+    call func_isempty_7
+    condjump cond_5_then
+    loadarg arg_lst_15
+    head
+    setlocal local_x_17
+    loadlocal local_x_17
+    pop
+    loadarg arg_lst_15
+    tail
+    setlocal local_xs_18
+    loadlocal local_xs_18
+    pop
+    loadlocal local_xs_18
+    loadarg arg_res_16
+    loadlocal local_x_17
+    call func_addelement_9
+    call func_counthelper_14
+    jump prog_6_end
+    prog_6_end:
+    jump cond_5_end
+    cond_5_then:
+    loadarg arg_res_16
+    cond_5_end:
+    ret
+}
+
+
+func func_count_19 {
+    arg arg_lst_20
+
+    loadarg arg_lst_20
+    makelist 0
+    call func_counthelper_14
+    ret
+}

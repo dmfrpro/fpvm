@@ -14,11 +14,8 @@ func func_f_0 {
     loadint 10
     setlocal local_x_1
     loadlocal local_x_1
-    stdout
-    loadnull
+    pop
+    loadlocal local_x_1
     prog_1_end:
     ret
 }
-
-
-

@@ -13,11 +13,13 @@ func func_outer_0 {
 
     loadint 1
     setlocal local_x_1
+    loadlocal local_x_1
+    pop
+    pop
     call func_inner_2
-    stdout
+    pop
     loadlocal local_x_1
     jump prog_1_end
-    loadnull
     prog_1_end:
     ret
 }
@@ -31,6 +33,3 @@ func func_inner_2 {
     loadcapture local_x_1
     ret
 }
-
-
-

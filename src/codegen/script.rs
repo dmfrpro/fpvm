@@ -1,5 +1,3 @@
-use std::collections::btree_map::Values;
-
 use crate::syntax::node::{Node, NodeKind};
 
 use super::{BytecodeFunction, CodeGenerator, CodegenError, Instruction};
@@ -31,7 +29,12 @@ impl<'a> CodeGenerator<'a> {
 
             NodeKind::ListNode(inner) => match &inner.kind {
                 NodeKind::ElementsNode(elements) => {
-                    self.compile_script_sequence(elements, function)
+                    if elements.is_empty() {
+                        function.emit(Instruction::LoadNull);
+                        Ok(())
+                    } else {
+                        self.compile_prog_sequence(elements, function)
+                    }
                 }
 
                 _ => Err(CodegenError::InvalidNode {
@@ -39,9 +42,16 @@ impl<'a> CodeGenerator<'a> {
                 }),
             },
 
-            NodeKind::ElementsNode(elements) => self.compile_script_sequence(elements, function),
+            NodeKind::ElementsNode(elements) => {
+                if elements.is_empty() {
+                    function.emit(Instruction::LoadNull);
+                    Ok(())
+                } else {
+                    self.compile_prog_sequence(elements, function)
+                }
+            }
 
-            _ => self.compile_script_item(node, function),
+            _ => self.compile_prog_item(node, function),
         }
     }
 
@@ -52,6 +62,21 @@ impl<'a> CodeGenerator<'a> {
     ) -> Result<(), CodegenError> {
         for element in elements {
             self.compile_script_item(element, function)?;
+        }
+
+        Ok(())
+    }
+
+    fn compile_prog_sequence(
+        &mut self,
+        elements: &[Box<Node>],
+        function: &mut BytecodeFunction,
+    ) -> Result<(), CodegenError> {
+        for (index, element) in elements.iter().enumerate() {
+            self.compile_prog_item(element, function)?;
+            if index + 1 != elements.len() {
+                function.emit(Instruction::Pop);
+            }
         }
 
         Ok(())
@@ -88,6 +113,32 @@ impl<'a> CodeGenerator<'a> {
                 function.emit(Instruction::Stdout);
                 Ok(())
             }
+        }
+    }
+
+    fn compile_prog_item(
+        &mut self,
+        node: &Node,
+        function: &mut BytecodeFunction,
+    ) -> Result<(), CodegenError> {
+        match &node.kind {
+            NodeKind::SetqNode(name, value) => self.compile_setq(name, value, function, true),
+
+            NodeKind::FuncNode(_, _, _) => {
+                // in prog context function declaration doesn't return
+                Ok(())
+            }
+
+            NodeKind::ReturnNode(value) => self.compile_return(value, function),
+
+            NodeKind::BreakNode => self.compile_break(function),
+
+            NodeKind::WhileNode(cond, body) => {
+                self.compile_while(cond, body, function)?;
+                Ok(())
+            }
+
+            _ => self.compile_expr(node, function),
         }
     }
 }

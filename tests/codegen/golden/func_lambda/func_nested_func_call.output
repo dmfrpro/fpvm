@@ -19,6 +19,3 @@ func func_inner_1 {
     loadint 42
     ret
 }
-
-
-

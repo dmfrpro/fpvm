@@ -13,6 +13,3 @@ func func_f_0 {
     prog_1_end:
     ret
 }
-
-
-

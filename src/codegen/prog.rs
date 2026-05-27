@@ -31,8 +31,6 @@ impl<'a> CodeGenerator<'a> {
         self.return_targets.pop();
 
         if result.is_ok() {
-            // if there is no return inside of a Prog node then Prog node result is `null`
-            function.emit(Instruction::LoadNull);
             function.emit(Instruction::Label(end_label));
         }
 

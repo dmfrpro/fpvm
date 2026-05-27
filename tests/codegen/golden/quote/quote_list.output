@@ -9,6 +9,3 @@ func __top_level {
     loadnull
     ret
 }
-
-
-

@@ -55,6 +55,10 @@ impl fmt::Display for Instruction {
             Instruction::IsNull => write!(f, "isnull"),
             Instruction::Length => write!(f, "length"),
 
+            Instruction::Or => write!(f, "or"),
+            Instruction::Not => write!(f, "not"),
+            Instruction::IsList => write!(f, "islist"),
+
             Instruction::Eval => write!(f, "eval"),
         }
     }

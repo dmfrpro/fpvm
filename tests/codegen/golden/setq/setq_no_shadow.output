@@ -5,19 +5,16 @@ func __top_level {
 
     loadint 1
     setlocal local_x_0
+    loadlocal local_x_0
+    pop
     loadint 2
     setlocal local_x_0
-    loadnull
-    prog_2_end:
-    stdout
     loadlocal local_x_0
-    stdout
-    loadnull
+    prog_2_end:
+    pop
+    loadlocal local_x_0
     prog_1_end:
     stdout
     loadnull
     ret
 }
-
-
-

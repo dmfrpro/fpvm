@@ -26,6 +26,3 @@ func func_only_negative_0 {
     cond_1_end:
     ret
 }
-
-
-

@@ -9,9 +9,9 @@ func __top_level {
 
 
 func func_outer_0 {
+    pop
     call func_inner_1
     jump prog_1_end
-    loadnull
     prog_1_end:
     ret
 }
@@ -21,6 +21,3 @@ func func_inner_1 {
     loadint 1
     ret
 }
-
-
-

@@ -32,6 +32,3 @@ func lambda_2 {
     add
     ret
 }
-
-
-

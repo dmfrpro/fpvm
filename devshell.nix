@@ -23,6 +23,7 @@ pkgs.mkShell {
   name = "fpvm-dev";
 
   packages = with pkgs; [
+    stdenv.cc
     rustc
     cargo
     rustfmt

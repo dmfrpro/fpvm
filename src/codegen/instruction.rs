@@ -63,6 +63,11 @@ pub enum Instruction {
     IsNull,
     Length,
 
+    // Boolean operations
+    Or,
+    Not,
+    IsList,
+
     // Eval
     Eval,
 }
