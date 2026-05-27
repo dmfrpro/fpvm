@@ -1,0 +1,33 @@
+global global_addOrSub_1
+
+entry __top_level
+
+func __top_level {
+    loadfunc lambda_1
+    setglobal global_addOrSub_1
+    loadglobal global_addOrSub_1
+    loadint -1
+    callstack 1
+    loadint 3
+    loadint 4
+    callstack 2
+    stdout
+    loadnull
+    ret
+}
+
+
+func lambda_1 {
+    arg arg_p_0
+
+    loadarg arg_p_0
+    loadint 0
+    less
+    condjump cond_1_then
+    loadatom minus
+    jump cond_1_end
+    cond_1_then:
+    loadatom plus
+    cond_1_end:
+    ret
+}

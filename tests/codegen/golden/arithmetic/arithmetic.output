@@ -1,0 +1,12 @@
+entry __top_level
+
+func __top_level {
+    loadint 10
+    loadint 2
+    loadint 5
+    mul
+    add
+    stdout
+    loadnull
+    ret
+}

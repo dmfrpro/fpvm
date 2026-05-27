@@ -19,8 +19,31 @@ impl SemanticAnalyzer {
         };
 
         for builtin in [
-            "+", "-", "*", "/", "lesseq", "greater", "equal", "times", "minus", "plus", "mod",
-            "print", "eval", "less",
+            "+",
+            "-",
+            "*",
+            "/",
+            "lesseq",
+            "greater",
+            "equal",
+            "times",
+            "minus",
+            "plus",
+            "mod",
+            "print",
+            "eval",
+            "less",
+            "nonequal",
+            "greatereq",
+            "head",
+            "tail",
+            "cons",
+            "isnull",
+            "length",
+            "divide",
+            "or",
+            "not",
+            "islist",
         ] {
             analyzer
                 .symbol_table
@@ -62,6 +85,22 @@ impl SemanticAnalyzer {
 
     fn is_inside_loop(&self) -> bool {
         *self.in_loop.last().unwrap_or(&false)
+    }
+
+    fn declare_locals(&mut self, locals_node: &Node) {
+        if let NodeKind::ListNode(elems) = &locals_node.kind {
+            if let NodeKind::ElementsNode(local_nodes) = &elems.kind {
+                for local in local_nodes {
+                    if let NodeKind::Identifier(name) = &local.kind {
+                        let info = SymbolInfo {
+                            defined_at: local.span.clone(),
+                            kind: SymbolKind::Variable,
+                        };
+                        self.symbol_table.insert(name.clone(), info).ok();
+                    }
+                }
+            }
+        }
     }
 
     fn add_parameters_to_scope(&mut self, params_node: &Node) {
@@ -132,9 +171,8 @@ impl SemanticAnalyzer {
                         defined_at: id_node.span.clone(),
                         kind: SymbolKind::Variable,
                     };
-
                     if let Err(_) = self.symbol_table.insert(name.clone(), info) {
-                        // Ignore duplication of symbol
+                        // ignore duplicate definition
                     }
                     self.visit_node(expr);
                 } else {
@@ -183,8 +221,8 @@ impl SemanticAnalyzer {
             }
             NodeKind::ProgNode(vars, body_node) => {
                 self.symbol_table.enter_scope();
-                self.add_parameters_to_scope(vars);
                 self.push_context(true, self.is_inside_loop());
+                self.add_parameters_to_scope(vars);
                 self.visit_node(body_node);
                 self.pop_context();
                 self.symbol_table.exit_scope();

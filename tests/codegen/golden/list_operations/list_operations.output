@@ -1,0 +1,24 @@
+global global_L_0
+
+entry __top_level
+
+func __top_level {
+    loadint 1
+    loadint 2
+    loadint 3
+    loadint 4
+    makelist 4
+    setglobal global_L_0
+    loadglobal global_L_0
+    head
+    stdout
+    loadglobal global_L_0
+    tail
+    stdout
+    loadint 0
+    loadglobal global_L_0
+    cons
+    stdout
+    loadnull
+    ret
+}

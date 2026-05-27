@@ -48,6 +48,18 @@ impl fmt::Display for Instruction {
 
             Instruction::Ret => write!(f, "ret"),
             Instruction::Stdout => write!(f, "stdout"),
+
+            Instruction::Head => write!(f, "head"),
+            Instruction::Tail => write!(f, "tail"),
+            Instruction::Cons => write!(f, "cons"),
+            Instruction::IsNull => write!(f, "isnull"),
+            Instruction::Length => write!(f, "length"),
+
+            Instruction::Or => write!(f, "or"),
+            Instruction::Not => write!(f, "not"),
+            Instruction::IsList => write!(f, "islist"),
+
+            Instruction::Eval => write!(f, "eval"),
         }
     }
 }

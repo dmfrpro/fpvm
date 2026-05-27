@@ -1,0 +1,50 @@
+entry __top_level
+
+func __top_level {
+    local local_xs_2
+    local local_result_3
+
+    loadint 10
+    loadint 20
+    loadint 30
+    loadint 40
+    loadint 50
+    loadnull
+    cons
+    cons
+    cons
+    cons
+    cons
+    setlocal local_xs_2
+    loadlocal local_xs_2
+    pop
+    loadlocal local_xs_2
+    call func_len_0
+    setlocal local_result_3
+    loadlocal local_result_3
+    pop
+    loadlocal local_result_3
+    prog_1_end:
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_len_0 {
+    arg arg_xs_1
+
+    loadarg arg_xs_1
+    isnull
+    condjump cond_2_then
+    loadint 1
+    loadarg arg_xs_1
+    tail
+    call func_len_0
+    add
+    jump cond_2_end
+    cond_2_then:
+    loadint 0
+    cond_2_end:
+    ret
+}

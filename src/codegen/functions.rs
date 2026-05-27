@@ -42,6 +42,36 @@ impl<'a> CodeGenerator<'a> {
             });
         }
 
+        // Single-element list with a literal: (null), (5), (true) → just the literal
+        // Single-element list with a non-function identifier: (x) → just the value
+        if nodes.len() == 1 {
+            match &nodes[0].kind {
+                NodeKind::NullNode
+                | NodeKind::BoolNode(_)
+                | NodeKind::IntNode(_)
+                | NodeKind::RealNode(_)
+                | NodeKind::QuoteNode(_) => {
+                    return self.compile_expr(&nodes[0], function);
+                }
+                NodeKind::Identifier(name) => {
+                    // If it's not a known function, just return the value
+                    // instead of trying to call it dynamically
+                    if let Ok(symbol_id) = self.lookup_symbol(name) {
+                        if let Some(symbol) = self.symbol_table.symbol(symbol_id) {
+                            if symbol.kind != SymbolKind::Function {
+                                return self.compile_expr(&nodes[0], function);
+                            }
+                        } else {
+                            return self.compile_expr(&nodes[0], function);
+                        }
+                    } else {
+                        return self.compile_expr(&nodes[0], function);
+                    }
+                }
+                _ => {}
+            }
+        }
+
         let callee = &nodes[0];
         let args = &nodes[1..];
         let argc = args.len();
@@ -99,26 +129,38 @@ impl<'a> CodeGenerator<'a> {
     }
 
     fn builtin_instruction(name: &str, argc: usize) -> Result<Option<Instruction>, CodegenError> {
-        let instruction = match name {
-            "plus" => Instruction::Add,
-            "minus" => Instruction::Sub,
-            "times" => Instruction::Mul,
-            "divide" => Instruction::Div,
-            "mod" => Instruction::Mod,
+        let (instruction, expected_argc) = match name {
+            "plus" => (Instruction::Add, 2),
+            "minus" => (Instruction::Sub, 2),
+            "times" => (Instruction::Mul, 2),
+            "divide" => (Instruction::Div, 2),
+            "mod" => (Instruction::Mod, 2),
 
-            "equal" => Instruction::Eq,
-            "nonequal" => Instruction::Neq,
-            "less" => Instruction::Less,
-            "lesseq" => Instruction::Leq,
-            "greater" => Instruction::Greater,
-            "greatereq" => Instruction::Geq,
+            "equal" => (Instruction::Eq, 2),
+            "nonequal" => (Instruction::Neq, 2),
+            "less" => (Instruction::Less, 2),
+            "lesseq" => (Instruction::Leq, 2),
+            "greater" => (Instruction::Greater, 2),
+            "greatereq" => (Instruction::Geq, 2),
+
+            "head" => (Instruction::Head, 1),
+            "tail" => (Instruction::Tail, 1),
+            "cons" => (Instruction::Cons, 2),
+            "isnull" => (Instruction::IsNull, 1),
+            "length" => (Instruction::Length, 1),
+            "or" => (Instruction::Or, 2),
+            "not" => (Instruction::Not, 1),
+            "islist" => (Instruction::IsList, 1),
 
             _ => return Ok(None),
         };
 
-        if argc != 2 {
+        if argc != expected_argc {
             return Err(CodegenError::InvalidNode {
-                message: format!("builtin '{}' expects 2 arguments, got {}", name, argc),
+                message: format!(
+                    "builtin '{}' expects {} arguments, got {}",
+                    name, expected_argc, argc
+                ),
             });
         }
 
@@ -135,19 +177,15 @@ impl<'a> CodeGenerator<'a> {
             | NodeKind::BoolNode(_)
             | NodeKind::IntNode(_)
             | NodeKind::RealNode(_)
-            | NodeKind::Identifier(_) 
-            | NodeKind::ListNode(_) => {
-                self.compile_expr(arg, function)
-            }
+            | NodeKind::Identifier(_)
+            | NodeKind::ListNode(_) => self.compile_expr(arg, function)?,
 
-            NodeKind::ElementNode(inner) => {
-                self.compile_eval_expr(inner, function)
-            }
+            NodeKind::ElementNode(inner) => self.compile_eval_expr(inner, function)?,
 
-            _ => {
-                self.compile_expr(arg, function)
-            }
+            _ => self.compile_expr(arg, function)?,
         }
-    }
 
+        function.emit(Instruction::Eval);
+        Ok(())
+    }
 }

@@ -18,6 +18,3 @@ func lambda_1 {
     add
     ret
 }
-
-
-

@@ -1,0 +1,20 @@
+entry __top_level
+
+func __top_level {
+    loadint 5
+    loadint 3
+    greater
+    condjump cond_1_then
+    loadint 5
+    loadint 1
+    sub
+    jump cond_1_end
+    cond_1_then:
+    loadint 1
+    loadint 1
+    add
+    cond_1_end:
+    stdout
+    loadnull
+    ret
+}

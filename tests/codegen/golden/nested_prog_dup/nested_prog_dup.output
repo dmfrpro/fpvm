@@ -1,0 +1,19 @@
+entry __top_level
+
+func __top_level {
+    local local_a_0
+    local local_a_1
+
+    loadint 1
+    setlocal local_a_0
+    loadlocal local_a_0
+    prog_1_end:
+    stdout
+    loadint 2
+    setlocal local_a_1
+    loadlocal local_a_1
+    prog_2_end:
+    stdout
+    loadnull
+    ret
+}

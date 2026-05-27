@@ -1,15 +1,11 @@
-/target
-Cargo.lock
-# Devenv
-.devenv*
-devenv.local.nix
-devenv.local.yaml
+# Nix build results
+result
+result-*
 
-# direnv
-.direnv
+# Ignore all dotfiles
+.*
 
-# pre-commit
-.pre-commit-config.yaml
+# But not these
+!.envrc
 
-# Artifacts
-/target
+target

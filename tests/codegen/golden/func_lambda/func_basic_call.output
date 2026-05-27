@@ -17,6 +17,3 @@ func func_add_one_0 {
     add
     ret
 }
-
-
-

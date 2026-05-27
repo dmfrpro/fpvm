@@ -51,6 +51,3 @@ func func_inc_7 {
     add
     ret
 }
-
-
-

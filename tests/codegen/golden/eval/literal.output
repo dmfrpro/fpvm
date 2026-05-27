@@ -2,14 +2,14 @@ entry __top_level
 
 func __top_level {
     loadint 10
+    eval
     stdout
     loadbool true
+    eval
     stdout
     loadnull
+    eval
     stdout
     loadnull
     ret
 }
-
-
-

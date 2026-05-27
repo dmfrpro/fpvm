@@ -1,0 +1,196 @@
+entry __top_level
+
+func __top_level {
+    loadint 1
+    loadint 4
+    loadint 1
+    loadint 6
+    loadint 7
+    loadint 5
+    loadint 15
+    makelist 7
+    call func_mergesort_15
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_isempty_0 {
+    arg arg_lst_1
+
+    loadarg arg_lst_1
+    isnull
+    condjump cond_1_then
+    loadarg arg_lst_1
+    head
+    isnull
+    jump cond_1_end
+    cond_1_then:
+    loadbool true
+    cond_1_end:
+    ret
+}
+
+
+func func_take_2 {
+    arg arg_n_3
+    arg arg_lst_4
+
+    loadarg arg_lst_4
+    call func_isempty_0
+    condjump cond_2_then
+    loadarg arg_n_3
+    loadint 0
+    eq
+    condjump cond_3_then
+    loadarg arg_lst_4
+    head
+    loadarg arg_n_3
+    loadint 1
+    sub
+    loadarg arg_lst_4
+    tail
+    call func_take_2
+    cons
+    jump cond_3_end
+    cond_3_then:
+    loadnull
+    cond_3_end:
+    jump cond_2_end
+    cond_2_then:
+    loadnull
+    cond_2_end:
+    ret
+}
+
+
+func func_drop_5 {
+    arg arg_n_6
+    arg arg_lst_7
+
+    loadarg arg_lst_7
+    call func_isempty_0
+    condjump cond_4_then
+    loadarg arg_n_6
+    loadint 0
+    eq
+    condjump cond_5_then
+    loadarg arg_n_6
+    loadint 1
+    sub
+    loadarg arg_lst_7
+    tail
+    call func_drop_5
+    jump cond_5_end
+    cond_5_then:
+    loadarg arg_lst_7
+    cond_5_end:
+    jump cond_4_end
+    cond_4_then:
+    loadarg arg_lst_7
+    cond_4_end:
+    ret
+}
+
+
+func func_merge_8 {
+    arg arg_lhs_9
+    arg arg_rhs_10
+
+    loadarg arg_lhs_9
+    call func_isempty_0
+    condjump cond_6_then
+    loadarg arg_rhs_10
+    call func_isempty_0
+    condjump cond_7_then
+    loadarg arg_lhs_9
+    head
+    loadarg arg_rhs_10
+    head
+    less
+    condjump cond_8_then
+    loadarg arg_rhs_10
+    head
+    loadarg arg_lhs_9
+    loadarg arg_rhs_10
+    tail
+    call func_merge_8
+    cons
+    jump cond_8_end
+    cond_8_then:
+    loadarg arg_lhs_9
+    head
+    loadarg arg_lhs_9
+    tail
+    loadarg arg_rhs_10
+    call func_merge_8
+    cons
+    cond_8_end:
+    jump cond_7_end
+    cond_7_then:
+    loadarg arg_lhs_9
+    cond_7_end:
+    jump cond_6_end
+    cond_6_then:
+    loadarg arg_rhs_10
+    cond_6_end:
+    ret
+}
+
+
+func func_leftsplit_11 {
+    arg arg_lst_12
+
+    loadarg arg_lst_12
+    length
+    loadint 2
+    div
+    loadarg arg_lst_12
+    call func_take_2
+    ret
+}
+
+
+func func_rightsplit_13 {
+    arg arg_lst_14
+
+    loadarg arg_lst_14
+    length
+    loadint 2
+    div
+    loadarg arg_lst_14
+    call func_drop_5
+    ret
+}
+
+
+func func_mergesort_15 {
+    arg arg_lst_16
+
+    loadarg arg_lst_16
+    islist
+    not
+    condjump cond_9_then
+    loadarg arg_lst_16
+    length
+    loadint 1
+    leq
+    condjump cond_10_then
+    loadarg arg_lst_16
+    call func_leftsplit_11
+    call func_mergesort_15
+    loadarg arg_lst_16
+    call func_rightsplit_13
+    call func_mergesort_15
+    call func_merge_8
+    jump cond_10_end
+    cond_10_then:
+    loadarg arg_lst_16
+    cond_10_end:
+    jump cond_9_end
+    cond_9_then:
+    loadnull
+    cond_9_end:
+    ret
+}

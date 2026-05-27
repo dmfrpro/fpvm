@@ -5,15 +5,8 @@ mod pipelines;
 mod report;
 mod runner;
 
-pub use config::{
-    parse_args,
-    DumpConfig,
-    DumpStage,
-};
+pub use config::{DumpConfig, DumpStage, parse_args};
 
 pub use report::DumpReport;
 
-pub use runner::{
-    run_and_write,
-    run_to_reports,
-};
+pub use runner::{run_and_write, run_to_reports};

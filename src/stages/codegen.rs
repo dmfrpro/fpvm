@@ -23,12 +23,12 @@ pub fn codegen_stage(prog: CheckedProgram) -> StageOutput<GeneratedProg> {
 
     match generator.generate(&prog.ast) {
         Ok(program) => {
-            let gen_prog = GeneratedProg{
+            let gen_prog = GeneratedProg {
                 ast: prog.ast,
-                bytecode: program
+                bytecode: program,
             };
             StageOutput::ok(gen_prog)
-        },
+        }
         Err(error) => StageOutput::error(vec![Diagnostic::error(format!(
             "Codegen error: {:?}",
             error

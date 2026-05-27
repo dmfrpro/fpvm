@@ -1,6 +1,6 @@
 use crate::syntax::node::{Node, NodeKind};
 
-use super::{BytecodeFunction, CodegenError, CodeGenerator, Instruction};
+use super::{BytecodeFunction, CodeGenerator, CodegenError, Instruction};
 
 impl<'a> CodeGenerator<'a> {
     pub(crate) fn compile_quote(
@@ -38,21 +38,25 @@ impl<'a> CodeGenerator<'a> {
             }
 
             NodeKind::Identifier(name) => {
+                // If the identifier refers to a function, emit LoadFunc so that
+                // eval can call it later.
+                if let Ok(symbol_id) = self.lookup_symbol(name) {
+                    if let Some(symbol) = self.symbol_table.symbol(symbol_id) {
+                        if symbol.kind == crate::symbol_table::SymbolKind::Function {
+                            function.emit(Instruction::LoadFunc(symbol.label.clone()));
+                            return Ok(());
+                        }
+                    }
+                }
                 function.emit(Instruction::LoadAtom(name.clone()));
                 Ok(())
             }
 
-            NodeKind::ElementNode(inner) => {
-                self.compile_quoted_value(inner, function)
-            }
+            NodeKind::ElementNode(inner) => self.compile_quoted_value(inner, function),
 
-            NodeKind::ListNode(inner) => {
-                self.compile_quoted_list(inner, function)
-            }
+            NodeKind::ListNode(inner) => self.compile_quoted_list(inner, function),
 
-            NodeKind::ElementsNode(elements) => {
-                self.compile_quoted_elements(elements, function)
-            }
+            NodeKind::ElementsNode(elements) => self.compile_quoted_elements(elements, function),
 
             NodeKind::QuoteNode(inner) => {
                 // Nested quote is treated as data too.
@@ -61,10 +65,17 @@ impl<'a> CodeGenerator<'a> {
                 self.compile_quoted_value(inner, function)
             }
 
+            NodeKind::LambdaNode(args, body) => {
+                function.emit(Instruction::LoadAtom("lambda".to_string()));
+                self.compile_quoted_value(args, function)?;
+                self.compile_quoted_value(body, function)?;
+                function.emit(Instruction::MakeList(3));
+                Ok(())
+            }
+
             NodeKind::ProgramNode(_)
             | NodeKind::SetqNode(_, _)
             | NodeKind::FuncNode(_, _, _)
-            | NodeKind::LambdaNode(_, _)
             | NodeKind::ProgNode(_, _)
             | NodeKind::CondNode(_, _, _)
             | NodeKind::WhileNode(_, _)
@@ -82,9 +93,7 @@ impl<'a> CodeGenerator<'a> {
         function: &mut BytecodeFunction,
     ) -> Result<(), CodegenError> {
         match &inner.kind {
-            NodeKind::ElementsNode(elements) => {
-                self.compile_quoted_elements(elements, function)
-            }
+            NodeKind::ElementsNode(elements) => self.compile_quoted_elements(elements, function),
 
             NodeKind::ElementNode(element) => {
                 self.compile_quoted_value(element, function)?;

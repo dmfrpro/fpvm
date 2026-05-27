@@ -1,0 +1,92 @@
+entry __top_level
+
+func __top_level {
+    local local_xs_8
+    local local_result_9
+
+    loadint -2
+    loadint -1
+    loadint 0
+    loadint 1
+    loadint 2
+    loadint 3
+    loadnull
+    cons
+    cons
+    cons
+    cons
+    cons
+    cons
+    setlocal local_xs_8
+    loadlocal local_xs_8
+    pop
+    loadfunc func_isPos_6
+    loadlocal local_xs_8
+    call func_filter_3
+    setlocal local_result_9
+    loadlocal local_result_9
+    pop
+    loadlocal local_result_9
+    prog_1_end:
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_apply1_0 {
+    arg arg_fn_1
+    arg arg_a_2
+
+    loadarg arg_fn_1
+    loadarg arg_a_2
+    loadnull
+    cons
+    cons
+    eval
+    ret
+}
+
+
+func func_filter_3 {
+    arg arg_pred_4
+    arg arg_xs_5
+
+    loadarg arg_xs_5
+    isnull
+    condjump cond_2_then
+    loadarg arg_pred_4
+    loadarg arg_xs_5
+    head
+    call func_apply1_0
+    condjump cond_3_then
+    loadarg arg_pred_4
+    loadarg arg_xs_5
+    tail
+    call func_filter_3
+    jump cond_3_end
+    cond_3_then:
+    loadarg arg_xs_5
+    head
+    loadarg arg_pred_4
+    loadarg arg_xs_5
+    tail
+    call func_filter_3
+    cons
+    cond_3_end:
+    jump cond_2_end
+    cond_2_then:
+    loadnull
+    cond_2_end:
+    ret
+}
+
+
+func func_isPos_6 {
+    arg arg_x_7
+
+    loadarg arg_x_7
+    loadint 0
+    greater
+    ret
+}

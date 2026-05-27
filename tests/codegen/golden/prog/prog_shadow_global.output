@@ -16,11 +16,9 @@ func func_f_1 {
     loadint 2
     setlocal local_x_2
     loadlocal local_x_2
+    pop
+    loadlocal local_x_2
     jump prog_1_end
-    loadnull
     prog_1_end:
     ret
 }
-
-
-

@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 mod common;
-use common::{test_pipeline_for_dir, Expected};
+use common::{Expected, test_pipeline_for_dir};
 
 use compiler::pipeline::pipeline::Pipeline;
 use compiler::stages::StageOutput;
