@@ -4,7 +4,6 @@ use crate::syntax::{MultilinePosition, Node};
 
 use super::{FunctionId, ScopeId, SymbolTable, SymbolTableError};
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct SpanKey {
     start_line: usize,

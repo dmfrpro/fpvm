@@ -246,7 +246,7 @@ impl SymbolTable {
         match kind {
             SymbolKind::Argument => function.args.push(symbol_id),
             SymbolKind::Local => function.locals.push(symbol_id),
-            _ => {},
+            _ => {}
         }
 
         Ok(())

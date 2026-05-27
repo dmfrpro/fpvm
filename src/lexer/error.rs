@@ -1,5 +1,5 @@
-use std::fmt;
 use super::token::Span;
+use std::fmt;
 
 #[derive(Debug, Clone)]
 pub enum LexErrorKind {
@@ -13,7 +13,6 @@ pub struct LexError {
     pub kind: LexErrorKind,
     pub span: Span,
 }
-
 
 impl fmt::Display for LexErrorKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

@@ -1,19 +1,10 @@
 use std::fs;
-use std::path::{
-    Path,
-    PathBuf,
-};
+use std::path::{Path, PathBuf};
 
-use compiler::tooling::dump::{
-    run_to_reports,
-    DumpConfig,
-    DumpStage,
-};
+use compiler::tooling::dump::{DumpConfig, DumpStage, run_to_reports};
 
 fn normalize(text: &str) -> String {
-    text.replace("\r\n", "\n")
-        .trim_end()
-        .to_string()
+    text.replace("\r\n", "\n").trim_end().to_string()
 }
 
 fn assert_codegen_golden(input_dir: &str, expected_dir: &str) {
@@ -40,17 +31,11 @@ fn assert_codegen_golden(input_dir: &str, expected_dir: &str) {
             .strip_prefix(&input_path)
             .unwrap_or(&report.input_path);
 
-        let expected_path = expected_dir
-            .join(relative_path)
-            .with_extension("output");
+        let expected_path = expected_dir.join(relative_path).with_extension("output");
 
-        let expected = fs::read_to_string(&expected_path)
-            .unwrap_or_else(|e| {
-                panic!(
-                    "cannot read expected file {}: {e}",
-                    expected_path.display(),
-                )
-            });
+        let expected = fs::read_to_string(&expected_path).unwrap_or_else(|e| {
+            panic!("cannot read expected file {}: {e}", expected_path.display(),)
+        });
 
         assert_eq!(
             normalize(&expected),
@@ -63,19 +48,15 @@ fn assert_codegen_golden(input_dir: &str, expected_dir: &str) {
 
 #[test]
 fn codegen_golden_branching() {
-assert_codegen_golden(
+    assert_codegen_golden(
         "tests/codegen/code/branching",
         "tests/codegen/golden/branching",
     );
 }
 
-
 #[test]
 fn codegen_golden_eval() {
-    assert_codegen_golden(
-        "tests/codegen/code/eval",
-        "tests/codegen/golden/eval",
-    );
+    assert_codegen_golden("tests/codegen/code/eval", "tests/codegen/golden/eval");
 }
 
 #[test]
@@ -88,10 +69,7 @@ fn codegen_golden_func_lambda() {
 
 #[test]
 fn codegen_golden_list() {
-    assert_codegen_golden(
-        "tests/codegen/code/list",
-        "tests/codegen/golden/list",
-    );
+    assert_codegen_golden("tests/codegen/code/list", "tests/codegen/golden/list");
 }
 
 #[test]
@@ -104,32 +82,20 @@ fn codegen_golden_literals() {
 
 #[test]
 fn codegen_golden_prog() {
-    assert_codegen_golden(
-        "tests/codegen/code/prog",
-        "tests/codegen/golden/prog",
-    );
+    assert_codegen_golden("tests/codegen/code/prog", "tests/codegen/golden/prog");
 }
 
 #[test]
 fn codegen_golden_quote() {
-    assert_codegen_golden(
-        "tests/codegen/code/quote",
-        "tests/codegen/golden/quote",
-    );
+    assert_codegen_golden("tests/codegen/code/quote", "tests/codegen/golden/quote");
 }
 
 #[test]
 fn codegen_golden_setq() {
-    assert_codegen_golden(
-        "tests/codegen/code/setq",
-        "tests/codegen/golden/setq",
-    );
+    assert_codegen_golden("tests/codegen/code/setq", "tests/codegen/golden/setq");
 }
 
 #[test]
 fn codegen_golden_misc() {
-    assert_codegen_golden(
-        "tests/codegen/code",
-        "tests/codegen/golden",
-    );
+    assert_codegen_golden("tests/codegen/code", "tests/codegen/golden");
 }

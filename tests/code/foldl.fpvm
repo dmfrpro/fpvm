@@ -12,6 +12,6 @@
       (setq xs (cons 1 (cons 2 (cons 3 (cons 4 null)))))
       (setq sum (foldl 'plus 0 xs))     # = 10
       (setq prod (foldl 'times 1 xs))   # = 24
-      (return (cons sum (cons prod null)))       # = null
+      (cons sum (cons prod null))
       )
 )

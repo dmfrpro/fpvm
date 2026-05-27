@@ -1,10 +1,6 @@
 # Add Integer division and remainder to std (intdiv, intrem)
 # divide always return real
 
-(func length (lst) '(
-        (func inner_length (lst res) (cond (isnull (head lst)) (res) (inner_length ((tail (lst)) (plus res 1))))) lst 0
-    )
-)
 (func isempty (lst) (isnull (head lst)))
 
 (
@@ -36,7 +32,7 @@
                             )
                     )
                 )
-                (return (cond (equal v (getbyindex lst l)) l -1))
+                (cond (equal v (getbyindex lst l)) l -1)
             )
     )
 )
