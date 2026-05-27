@@ -171,9 +171,8 @@ impl SemanticAnalyzer {
                         defined_at: id_node.span.clone(),
                         kind: SymbolKind::Variable,
                     };
-
                     if let Err(_) = self.symbol_table.insert(name.clone(), info) {
-                        // Ignore duplication of symbol
+                        // ignore duplicate definition
                     }
                     self.visit_node(expr);
                 } else {
@@ -222,8 +221,8 @@ impl SemanticAnalyzer {
             }
             NodeKind::ProgNode(vars, body_node) => {
                 self.symbol_table.enter_scope();
-                self.add_parameters_to_scope(vars);
                 self.push_context(true, self.is_inside_loop());
+                self.add_parameters_to_scope(vars);
                 self.visit_node(body_node);
                 self.pop_context();
                 self.symbol_table.exit_scope();
