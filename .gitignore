@@ -7,5 +7,6 @@ result-*
 
 # But not these
 !.envrc
+!.github
 
 target
