@@ -13,7 +13,6 @@ impl<'a> CodeGenerator<'a> {
         function: &mut BytecodeFunction,
     ) -> Result<(), CodegenError> {
         let function_info = self.find_function_by_owner_span(func_node)?;
-
         function.emit(Instruction::LoadFunc(function_info.label.clone()));
 
         Ok(())
@@ -27,7 +26,6 @@ impl<'a> CodeGenerator<'a> {
         function: &mut BytecodeFunction,
     ) -> Result<(), CodegenError> {
         let function_info = self.find_function_by_owner_span(lambda_node)?;
-
         function.emit(Instruction::LoadFunc(function_info.label.clone()));
 
         Ok(())
@@ -49,6 +47,17 @@ impl<'a> CodeGenerator<'a> {
         let argc = args.len();
 
         if let NodeKind::Identifier(name) = &callee.kind {
+            if name == "eval" {
+                if argc != 1 {
+                    return Err(CodegenError::InvalidNode {
+                        message: format!("eval expects 1 argument, got {}", argc),
+                    });
+                }
+
+                self.compile_eval_expr(&args[0], function)?;
+                return Ok(());
+            }
+
             if let Some(instruction) = Self::builtin_instruction(name, argc)? {
                 for arg in args {
                     self.compile_expr(arg, function)?;
@@ -104,16 +113,6 @@ impl<'a> CodeGenerator<'a> {
             "greater" => Instruction::Greater,
             "greatereq" => Instruction::Geq,
 
-            // Можно оставить как алиасы, если в тестах встречаются имена инструкций.
-            "add" => Instruction::Add,
-            "sub" => Instruction::Sub,
-            "mul" => Instruction::Mul,
-            "div" => Instruction::Div,
-            "eq" => Instruction::Eq,
-            "neq" => Instruction::Neq,
-            "leq" => Instruction::Leq,
-            "geq" => Instruction::Geq,
-
             _ => return Ok(None),
         };
 
@@ -126,24 +125,29 @@ impl<'a> CodeGenerator<'a> {
         Ok(Some(instruction))
     }
 
-    pub(crate) fn compile_prog(
+    pub(crate) fn compile_eval_expr(
         &mut self,
-        prog_node: &Node,
-        _locals_node: &Node,
-        body_node: &Node,
+        arg: &Node,
         function: &mut BytecodeFunction,
     ) -> Result<(), CodegenError> {
-        let previous_scope = self.current_scope_id;
+        match &arg.kind {
+            NodeKind::NullNode
+            | NodeKind::BoolNode(_)
+            | NodeKind::IntNode(_)
+            | NodeKind::RealNode(_)
+            | NodeKind::Identifier(_) 
+            | NodeKind::ListNode(_) => {
+                self.compile_expr(arg, function)
+            }
 
-        let prog_scope =
-            self.find_scope_by_owner_span(prog_node, crate::symbol_table::ScopeKind::Prog)?;
+            NodeKind::ElementNode(inner) => {
+                self.compile_eval_expr(inner, function)
+            }
 
-        self.current_scope_id = Some(prog_scope);
-
-        let result = self.compile_expr(body_node, function);
-
-        self.current_scope_id = previous_scope;
-
-        result
+            _ => {
+                self.compile_expr(arg, function)
+            }
+        }
     }
+
 }

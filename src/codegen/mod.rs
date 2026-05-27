@@ -11,10 +11,13 @@ pub use error::CodegenError;
 pub use generator::CodeGenerator;
 pub use instruction::Instruction;
 
-mod literals;
-mod identifier;
 mod assignment;
-mod functions;
-mod quote;
-mod branching;
 mod brancher;
+mod branching;
+mod functions;
+mod identifier;
+mod literals;
+mod prog;
+mod quote;
+mod script;
+mod control;

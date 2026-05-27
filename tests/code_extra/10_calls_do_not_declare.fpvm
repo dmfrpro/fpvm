@@ -3,3 +3,10 @@
 )
 
 (setq result (sum 1 2))
+
+(func sum1 (a b) 
+    (
+        (setq x (lambda (a) (plus a 1)))
+        (plus (x a) b)
+    )
+)

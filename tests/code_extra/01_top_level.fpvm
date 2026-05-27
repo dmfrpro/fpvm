@@ -5,6 +5,14 @@
     (plus a 1)
 )
 
-(func sum (a b)
-    (plus a b)
+(func sum (a b) (
+        (func inc (a)
+            (plus a 1)
+        ) 
+        (plus a b)
+    )
 )
+
+
+(inc x)
+(sum x y)

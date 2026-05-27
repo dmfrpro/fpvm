@@ -11,15 +11,15 @@ pub fn semantic_stage(prog: ParsedProgram) -> StageOutput<CheckedProgram> {
 
     let sem_errors = analyzer.analyze(&prog.ast);
 
-    let _: Vec<Diagnostic> = sem_errors
+    let diagnostics: Vec<Diagnostic> = sem_errors
         .into_iter()
         .map(|err| Diagnostic::error(format!("{:?}", err)))
         .collect();
 
     // in this branch we assuming that Semantic analizer is correct for any input code
-    // if !diagnostics.is_empty() {
-    //     return StageOutput::error(diagnostics);
-    // }
+    if !diagnostics.is_empty() {
+        return StageOutput::error(diagnostics);
+    }
 
     let symbol_table = match SymbolTableBuilder::new(Some(prog.ast.span.clone())).build(&prog.ast) {
         Ok(symbol_table) => symbol_table,

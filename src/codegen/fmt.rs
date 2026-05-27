@@ -47,6 +47,7 @@ impl fmt::Display for Instruction {
             Instruction::Pop => write!(f, "pop"),
 
             Instruction::Ret => write!(f, "ret"),
+            Instruction::Stdout => write!(f, "stdout"),
         }
     }
 }

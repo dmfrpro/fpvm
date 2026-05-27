@@ -8,6 +8,7 @@ impl<'a> CodeGenerator<'a> {
         name_node: &Node,
         value_node: &Node,
         function: &mut BytecodeFunction,
+        leave_value: bool,
     ) -> Result<(), CodegenError> {
         let NodeKind::Identifier(name) = &name_node.kind else {
             return Err(CodegenError::InvalidNode {
@@ -21,9 +22,9 @@ impl<'a> CodeGenerator<'a> {
 
         self.emit_set_symbol(symbol_id, function)?;
 
-        // set* consumes the value.
-        // setq is an expression, so it must leave assigned value on the stack.
-        self.emit_load_symbol(symbol_id, function)?;
+        if leave_value {
+            self.emit_load_symbol(symbol_id, function)?;
+        }
 
         Ok(())
     }

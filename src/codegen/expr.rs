@@ -17,7 +17,7 @@ impl<'a> CodeGenerator<'a> {
             NodeKind::Identifier(name) => self.compile_identifier(name, function),
 
             NodeKind::QuoteNode(expr) => self.compile_quote(expr, function),
-            NodeKind::SetqNode(name, value) => self.compile_setq(name, value, function),
+            NodeKind::SetqNode(name, value) => self.compile_setq(name, value, function, true),
             NodeKind::FuncNode(name, args, body) => {
                 self.compile_func_expr(node, name, args, body, function)
             }
@@ -32,31 +32,24 @@ impl<'a> CodeGenerator<'a> {
             NodeKind::CondNode(c, t, e) => self.compile_cond(c, t, e, function),
             NodeKind::WhileNode(c, b) => self.compile_while(c, b, function),
             NodeKind::ReturnNode(value) => {
-                self.compile_expr(value, function)?;
-                function.emit(super::Instruction::Ret);
-                Ok(())
+                self.compile_return(value, function)
             }
             NodeKind::BreakNode => {
-                if let Some(label) = self.loop_context.peek_brancher() {
-                    function.emit(super::Instruction::Jump(label.to_string()));
-                    Ok(())
-                } else {
-                        Err(CodegenError::UnsupportedNode {
-                        message: "not implemented".to_string(),
-                    })
-                }
+                self.compile_break(function)
             }
             NodeKind::ElementNode(subnode) => self.compile_expr(subnode, function),
             NodeKind::ElementsNode(subnodes) => {
+                if subnodes.is_empty() {
+                    function.emit(super::Instruction::LoadNull);
+                }
+                
                 for (index, subnode) in subnodes.iter().enumerate() {
                     self.compile_expr(subnode, function)?;
 
                     if index + 1 != subnodes.len() {
                         function.emit(super::Instruction::Pop);
                     }
-                }
-                if (subnodes.is_empty()) {
-                    function.emit(super::Instruction::LoadNull);
+
                 }
 
                 Ok(())

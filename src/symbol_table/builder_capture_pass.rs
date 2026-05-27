@@ -2,7 +2,7 @@ use super::builder::{SpanKey, SymbolTableBuilder};
 
 use crate::syntax::{Node, NodeKind};
 
-use super::table::{SymbolKind, FunctionId};
+use super::table::{FunctionId, SymbolKind};
 
 impl SymbolTableBuilder {
     pub(super) fn collect_captures(&mut self, node: &Node) {
@@ -24,6 +24,7 @@ impl SymbolTableBuilder {
             NodeKind::SetqNode(_name_node, value_node) => {
                 // name_node is declaration/assignment target, not variable usage.
                 self.collect_captures(value_node);
+                self.collect_assignment_target(_name_node);
             }
 
             NodeKind::FuncNode(_name_node, _args_node, body_node) => {
@@ -111,6 +112,14 @@ impl SymbolTableBuilder {
         self.scope_stack.pop();
     }
 
+    fn collect_assignment_target(&mut self, node: &Node) {
+        let NodeKind::Identifier(name) = &node.kind else {
+            return;
+        };
+
+        self.collect_identifier_usage(name);
+    }
+
     fn collect_identifier_usage(&mut self, name: &str) {
         let Some(symbol_id) = self.table.lookup(self.current_scope(), name) else {
             // Builtins like plus/less/head/tail are not stored in SymbolTable.
@@ -128,6 +137,12 @@ impl SymbolTableBuilder {
 
         // Globals are accessed through loadglobal, no capture needed.
         if symbol_kind == SymbolKind::Global || symbol_scope_id == self.table.global_scope_id {
+            return;
+        }
+
+        // Function symbols are addressed by function label.
+        // They do not need runtime captures.
+        if symbol_kind == SymbolKind::Function {
             return;
         }
 
