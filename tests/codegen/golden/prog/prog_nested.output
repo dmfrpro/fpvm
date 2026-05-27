@@ -11,13 +11,8 @@ func func_f_0 {
 
     loadint 2
     setlocal local_x_1
-    loadnull
+    loadlocal local_x_1
     prog_2_end:
-    stdout
-    loadnull
     prog_1_end:
     ret
 }
-
-
-

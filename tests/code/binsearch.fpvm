@@ -32,11 +32,12 @@
                             )
                     )
                 )
-                (cond (equal v (getbyindex lst l)) l -1)
+                (cond (equal v (getbyindex lst l)) l
+                      (cond (equal v (getbyindex lst r)) r -1))
             )
     )
 )
 
 # Test
 (setq testarr '(1 2 3 4 5))
-(equal (getbyindex (binsearch testarr 3)) 3) # True
+(equal (getbyindex testarr (binsearch testarr 3)) 3) # True

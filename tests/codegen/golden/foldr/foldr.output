@@ -1,0 +1,73 @@
+entry __top_level
+
+func __top_level {
+    local local_xs_8
+    local local_result_9
+
+    loadint 1
+    loadint 2
+    loadint 3
+    loadint 4
+    loadnull
+    cons
+    cons
+    cons
+    cons
+    setlocal local_xs_8
+    loadlocal local_xs_8
+    pop
+    loadatom plus
+    loadint 0
+    loadlocal local_xs_8
+    call func_foldr_4
+    setlocal local_result_9
+    loadlocal local_result_9
+    pop
+    loadlocal local_result_9
+    prog_1_end:
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_apply2_0 {
+    arg arg_fn_1
+    arg arg_a_2
+    arg arg_b_3
+
+    loadarg arg_fn_1
+    loadarg arg_a_2
+    loadarg arg_b_3
+    loadnull
+    cons
+    cons
+    cons
+    eval
+    ret
+}
+
+
+func func_foldr_4 {
+    arg arg_fn_5
+    arg arg_acc_6
+    arg arg_xs_7
+
+    loadarg arg_xs_7
+    isnull
+    condjump cond_2_then
+    loadarg arg_fn_5
+    loadarg arg_xs_7
+    head
+    loadarg arg_fn_5
+    loadarg arg_acc_6
+    loadarg arg_xs_7
+    tail
+    call func_foldr_4
+    call func_apply2_0
+    jump cond_2_end
+    cond_2_then:
+    loadarg arg_acc_6
+    cond_2_end:
+    ret
+}

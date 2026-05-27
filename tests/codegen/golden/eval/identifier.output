@@ -6,10 +6,8 @@ func __top_level {
     loadint 42
     setglobal global_x_0
     loadglobal global_x_0
+    eval
     stdout
     loadnull
     ret
 }
-
-
-

@@ -1,0 +1,30 @@
+entry __top_level
+
+func __top_level {
+    loadint 5
+    call func_fact_0
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_fact_0 {
+    arg arg_n_1
+
+    loadarg arg_n_1
+    loadint 1
+    leq
+    condjump cond_1_then
+    loadarg arg_n_1
+    loadarg arg_n_1
+    loadint 1
+    sub
+    call func_fact_0
+    mul
+    jump cond_1_end
+    cond_1_then:
+    loadint 1
+    cond_1_end:
+    ret
+}

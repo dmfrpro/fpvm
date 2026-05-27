@@ -23,6 +23,3 @@ func func_inner_2 {
     add
     ret
 }
-
-
-

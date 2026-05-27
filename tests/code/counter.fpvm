@@ -1,16 +1,17 @@
-(func tuple (first second) '(lambda (res) (res first second)))
-(func first (x y) 'x)
-(func second (x y) 'y)
-(func isempty (lst) (isnull (head lst)))
+(func tuple (a b) (cons a (cons b null)))
+(func first (t) (head t))
+(func second (t) (head (tail t)))
+(func isempty (lst) (cond (isnull lst) (true) (isnull (head lst))))
 
 (
     func addelement (res value) (
-        cond (isempty res) (tuple value 1) (
+        cond (isempty res) (cons (tuple value 1) null) (
             prog (x xs)
                 (
                 (setq x (head res))
                 (setq xs (tail res))
-                (return (cond (equal (first x) value) (cons (tuple value (plus (second x) 1) xs))))
+                (return (cond (equal (first x) value) (cons (tuple value (plus (second x) 1)) xs)
+                              (cons x (addelement xs value))))
                 )
         )
     )

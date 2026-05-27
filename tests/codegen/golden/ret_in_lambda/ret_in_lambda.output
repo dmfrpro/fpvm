@@ -1,0 +1,18 @@
+global global_f_1
+
+entry __top_level
+
+func __top_level {
+    loadfunc lambda_1
+    setglobal global_f_1
+    loadnull
+    ret
+}
+
+
+func lambda_1 {
+    arg arg_x_0
+
+    loadarg arg_x_0
+    ret
+}

@@ -27,6 +27,3 @@ func func_f_0 {
     cond_1_end:
     ret
 }
-
-
-

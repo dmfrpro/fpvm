@@ -23,6 +23,3 @@ func func_f_2 {
     loadint 2
     ret
 }
-
-
-

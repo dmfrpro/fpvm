@@ -8,5 +8,6 @@ pub mod stages;
 pub mod symbol_table;
 pub mod syntax;
 pub mod tooling;
+pub mod vm;
 
 lalrpop_mod!(pub grammar, "/syntax/grammar.rs");

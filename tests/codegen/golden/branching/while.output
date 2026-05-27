@@ -5,6 +5,8 @@ func __top_level {
 
     loadint 0
     setlocal local_i_0
+    loadlocal local_i_0
+    pop
     while_2_cond:
     loadlocal local_i_0
     loadint 10
@@ -16,7 +18,7 @@ func __top_level {
     loadint 1
     add
     setlocal local_i_0
-    loadnull
+    loadlocal local_i_0
     prog_3_end:
     pop
     jump while_2_cond
@@ -24,13 +26,8 @@ func __top_level {
     loadnull
     pop
     loadlocal local_i_0
-    stdout
-    loadnull
     prog_1_end:
     stdout
     loadnull
     ret
 }
-
-
-

@@ -19,6 +19,3 @@ func func_test_0 {
     loadnull
     ret
 }
-
-
-

@@ -19,11 +19,6 @@ func func_printer_1 {
     arg arg_value_2
 
     loadarg arg_value_2
-    stdout
-    loadnull
     prog_1_end:
     ret
 }
-
-
-

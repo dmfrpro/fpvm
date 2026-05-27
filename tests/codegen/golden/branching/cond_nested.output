@@ -37,6 +37,3 @@ func func_classify_0 {
     cond_1_end:
     ret
 }
-
-
-

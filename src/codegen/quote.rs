@@ -38,6 +38,16 @@ impl<'a> CodeGenerator<'a> {
             }
 
             NodeKind::Identifier(name) => {
+                // If the identifier refers to a function, emit LoadFunc so that
+                // eval can call it later.
+                if let Ok(symbol_id) = self.lookup_symbol(name) {
+                    if let Some(symbol) = self.symbol_table.symbol(symbol_id) {
+                        if symbol.kind == crate::symbol_table::SymbolKind::Function {
+                            function.emit(Instruction::LoadFunc(symbol.label.clone()));
+                            return Ok(());
+                        }
+                    }
+                }
                 function.emit(Instruction::LoadAtom(name.clone()));
                 Ok(())
             }
@@ -55,10 +65,17 @@ impl<'a> CodeGenerator<'a> {
                 self.compile_quoted_value(inner, function)
             }
 
+            NodeKind::LambdaNode(args, body) => {
+                function.emit(Instruction::LoadAtom("lambda".to_string()));
+                self.compile_quoted_value(args, function)?;
+                self.compile_quoted_value(body, function)?;
+                function.emit(Instruction::MakeList(3));
+                Ok(())
+            }
+
             NodeKind::ProgramNode(_)
             | NodeKind::SetqNode(_, _)
             | NodeKind::FuncNode(_, _, _)
-            | NodeKind::LambdaNode(_, _)
             | NodeKind::ProgNode(_, _)
             | NodeKind::CondNode(_, _, _)
             | NodeKind::WhileNode(_, _)

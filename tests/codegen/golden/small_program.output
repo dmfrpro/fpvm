@@ -41,10 +41,7 @@ func func_process_3 {
     loadarg arg_value_4
     call func_clamp_1
     setlocal local_result_5
-    loadnull
+    loadlocal local_result_5
     prog_3_end:
     ret
 }
-
-
-

@@ -49,6 +49,3 @@ func lambda_3 {
     add
     ret
 }
-
-
-
