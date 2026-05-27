@@ -85,7 +85,6 @@ impl SymbolTable {
     }
 }
 
-
 impl fmt::Display for SymbolKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -98,12 +97,7 @@ impl fmt::Display for SymbolKind {
 
 impl fmt::Display for SymbolInfo {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{} defined at {:?}",
-            self.kind,
-            self.defined_at
-        )
+        write!(f, "{} defined at {:?}", self.kind, self.defined_at)
     }
 }
 

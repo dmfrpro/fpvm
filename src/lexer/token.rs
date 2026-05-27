@@ -1,5 +1,5 @@
-use std::fmt;
 use crate::lexer::LexErrorKind;
+use std::fmt;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Position {
@@ -70,14 +70,11 @@ pub enum TokenKind {
     Invalid(LexErrorKind),
 }
 
-
-
 impl fmt::Display for Position {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "[{}:{}:{}]", self.col, self.line, self.offset)
     }
 }
-
 
 impl fmt::Display for Span {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

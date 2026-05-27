@@ -1,7 +1,7 @@
-use std::fmt;
 use crate::codegen::BytecodeProgram;
-use crate::syntax::node::Node;
 use crate::symbol_table::SymbolTable;
+use crate::syntax::node::Node;
+use std::fmt;
 
 pub struct Source {
     pub text: String,

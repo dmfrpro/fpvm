@@ -1,7 +1,4 @@
-use std::path::{
-    Path,
-    PathBuf,
-};
+use std::path::{Path, PathBuf};
 
 use super::config::DumpStage;
 
@@ -19,38 +16,15 @@ pub fn make_report(
     pipeline_output: &str,
 ) -> String {
     match stage {
-        DumpStage::Lexer => make_default_report(
-            input_file,
-            output_file,
-            stage,
-            pipeline_output,
-        ),
+        DumpStage::Lexer => make_default_report(input_file, output_file, stage, pipeline_output),
 
-        DumpStage::Syntax => make_default_report(
-            input_file,
-            output_file,
-            stage,
-            pipeline_output,
-        ),
+        DumpStage::Syntax => make_default_report(input_file, output_file, stage, pipeline_output),
 
-        DumpStage::Semantic => make_default_report(
-            input_file,
-            output_file,
-            stage,
-            pipeline_output,
-        ),
+        DumpStage::Semantic => make_default_report(input_file, output_file, stage, pipeline_output),
 
-        DumpStage::Codegen => make_codegen_report(
-            input_file,
-            output_file,
-            pipeline_output,
-        ),
+        DumpStage::Codegen => make_codegen_report(input_file, output_file, pipeline_output),
 
-        DumpStage::Vm => make_vm_report(
-            input_file,
-            output_file,
-            pipeline_output,
-        ),
+        DumpStage::Vm => make_vm_report(input_file, output_file, pipeline_output),
     }
 }
 
@@ -71,11 +45,7 @@ fn make_default_report(
     report
 }
 
-fn make_codegen_report(
-    _input_file: &Path,
-    _output_file: &Path,
-    pipeline_output: &str,
-) -> String {
+fn make_codegen_report(_input_file: &Path, _output_file: &Path, pipeline_output: &str) -> String {
     let mut report = String::new();
 
     report.push_str(pipeline_output);
@@ -83,11 +53,7 @@ fn make_codegen_report(
     report
 }
 
-fn make_vm_report(
-    input_file: &Path,
-    output_file: &Path,
-    pipeline_output: &str,
-) -> String {
+fn make_vm_report(input_file: &Path, output_file: &Path, pipeline_output: &str) -> String {
     let mut report = String::new();
 
     report.push_str("VM output\n");

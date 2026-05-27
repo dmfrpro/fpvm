@@ -1,6 +1,6 @@
 use crate::syntax::node::{Node, NodeKind};
 
-use super::{BytecodeFunction, CodegenError, CodeGenerator, Instruction};
+use super::{BytecodeFunction, CodeGenerator, CodegenError, Instruction};
 
 impl<'a> CodeGenerator<'a> {
     pub(crate) fn compile_quote(
@@ -42,17 +42,11 @@ impl<'a> CodeGenerator<'a> {
                 Ok(())
             }
 
-            NodeKind::ElementNode(inner) => {
-                self.compile_quoted_value(inner, function)
-            }
+            NodeKind::ElementNode(inner) => self.compile_quoted_value(inner, function),
 
-            NodeKind::ListNode(inner) => {
-                self.compile_quoted_list(inner, function)
-            }
+            NodeKind::ListNode(inner) => self.compile_quoted_list(inner, function),
 
-            NodeKind::ElementsNode(elements) => {
-                self.compile_quoted_elements(elements, function)
-            }
+            NodeKind::ElementsNode(elements) => self.compile_quoted_elements(elements, function),
 
             NodeKind::QuoteNode(inner) => {
                 // Nested quote is treated as data too.
@@ -82,9 +76,7 @@ impl<'a> CodeGenerator<'a> {
         function: &mut BytecodeFunction,
     ) -> Result<(), CodegenError> {
         match &inner.kind {
-            NodeKind::ElementsNode(elements) => {
-                self.compile_quoted_elements(elements, function)
-            }
+            NodeKind::ElementsNode(elements) => self.compile_quoted_elements(elements, function),
 
             NodeKind::ElementNode(element) => {
                 self.compile_quoted_value(element, function)?;

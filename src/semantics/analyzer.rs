@@ -19,9 +19,31 @@ impl SemanticAnalyzer {
         };
 
         for builtin in [
-            "+", "-", "*", "/", "lesseq", "greater", "equal", "times", "minus", "plus", "mod",
-            "print", "eval", "less", "nonequal", "greatereq", "head", "tail", "cons",
-            "isnull", "length",
+            "+",
+            "-",
+            "*",
+            "/",
+            "lesseq",
+            "greater",
+            "equal",
+            "times",
+            "minus",
+            "plus",
+            "mod",
+            "print",
+            "eval",
+            "less",
+            "nonequal",
+            "greatereq",
+            "head",
+            "tail",
+            "cons",
+            "isnull",
+            "length",
+            "divide",
+            "or",
+            "not",
+            "islist",
         ] {
             analyzer
                 .symbol_table

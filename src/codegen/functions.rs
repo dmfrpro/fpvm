@@ -144,19 +144,12 @@ impl<'a> CodeGenerator<'a> {
             | NodeKind::BoolNode(_)
             | NodeKind::IntNode(_)
             | NodeKind::RealNode(_)
-            | NodeKind::Identifier(_) 
-            | NodeKind::ListNode(_) => {
-                self.compile_expr(arg, function)
-            }
+            | NodeKind::Identifier(_)
+            | NodeKind::ListNode(_) => self.compile_expr(arg, function),
 
-            NodeKind::ElementNode(inner) => {
-                self.compile_eval_expr(inner, function)
-            }
+            NodeKind::ElementNode(inner) => self.compile_eval_expr(inner, function),
 
-            _ => {
-                self.compile_expr(arg, function)
-            }
+            _ => self.compile_expr(arg, function),
         }
     }
-
 }

@@ -1,5 +1,5 @@
-use super::token::{Position, Span, Token, TokenKind};
 use super::error::{LexError, LexErrorKind};
+use super::token::{Position, Span, Token, TokenKind};
 
 pub struct Lexer {
     input: String,

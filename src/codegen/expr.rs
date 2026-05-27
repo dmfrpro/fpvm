@@ -26,30 +26,23 @@ impl<'a> CodeGenerator<'a> {
             }
 
             // part 1
-            NodeKind::ProgNode(locals, body) => {
-                self.compile_prog(node, locals, body, function)
-            },
+            NodeKind::ProgNode(locals, body) => self.compile_prog(node, locals, body, function),
             NodeKind::CondNode(c, t, e) => self.compile_cond(c, t, e, function),
             NodeKind::WhileNode(c, b) => self.compile_while(c, b, function),
-            NodeKind::ReturnNode(value) => {
-                self.compile_return(value, function)
-            }
-            NodeKind::BreakNode => {
-                self.compile_break(function)
-            }
+            NodeKind::ReturnNode(value) => self.compile_return(value, function),
+            NodeKind::BreakNode => self.compile_break(function),
             NodeKind::ElementNode(subnode) => self.compile_expr(subnode, function),
             NodeKind::ElementsNode(subnodes) => {
                 if subnodes.is_empty() {
                     function.emit(super::Instruction::LoadNull);
                 }
-                
+
                 for (index, subnode) in subnodes.iter().enumerate() {
                     self.compile_expr(subnode, function)?;
 
                     if index + 1 != subnodes.len() {
                         function.emit(super::Instruction::Pop);
                     }
-
                 }
 
                 Ok(())
@@ -58,7 +51,11 @@ impl<'a> CodeGenerator<'a> {
                 // Function call
                 let subnodes = match &exprs.kind {
                     NodeKind::ElementsNode(sub) => sub,
-                    _ => return Err(CodegenError::InternalError { message: "Unexpected node type".to_string() }),
+                    _ => {
+                        return Err(CodegenError::InternalError {
+                            message: "Unexpected node type".to_string(),
+                        });
+                    }
                 };
                 self.compile_func_call(subnodes, function)
             }
