@@ -20,7 +20,8 @@ impl SemanticAnalyzer {
 
         for builtin in [
             "+", "-", "*", "/", "lesseq", "greater", "equal", "times", "minus", "plus", "mod",
-            "print", "eval", "less",
+            "print", "eval", "less", "nonequal", "greatereq", "head", "tail", "cons",
+            "isnull", "length",
         ] {
             analyzer
                 .symbol_table
@@ -62,6 +63,22 @@ impl SemanticAnalyzer {
 
     fn is_inside_loop(&self) -> bool {
         *self.in_loop.last().unwrap_or(&false)
+    }
+
+    fn declare_locals(&mut self, locals_node: &Node) {
+        if let NodeKind::ListNode(elems) = &locals_node.kind {
+            if let NodeKind::ElementsNode(local_nodes) = &elems.kind {
+                for local in local_nodes {
+                    if let NodeKind::Identifier(name) = &local.kind {
+                        let info = SymbolInfo {
+                            defined_at: local.span.clone(),
+                            kind: SymbolKind::Variable,
+                        };
+                        self.symbol_table.insert(name.clone(), info).ok();
+                    }
+                }
+            }
+        }
     }
 
     fn add_parameters_to_scope(&mut self, params_node: &Node) {
