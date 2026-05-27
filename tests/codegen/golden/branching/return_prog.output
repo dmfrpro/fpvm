@@ -1,9 +1,26 @@
-[FAILED]
+entry __top_level
 
-Diagnostics:
-[
-    Diagnostic {
-        level: Error,
-        message: "SemanticError { kind: DuplicateDefinition(\"x\"), span: MultilinePosition { start_col: 19, start_line: 6, end_col: 20, end_line: 6 }, message: Some(\"variable 'x' already defined at at line 4, columns 19-20\") }",
-    },
-]
+func __top_level {
+    call func_f_0
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_f_0 {
+    local local_x_1
+
+    loadint 10
+    setlocal local_x_1
+    loadlocal local_x_1
+    pop
+    loadlocal local_x_1
+    jump prog_1_end
+    pop
+    loadint 20
+    setlocal local_x_1
+    loadlocal local_x_1
+    prog_1_end:
+    ret
+}

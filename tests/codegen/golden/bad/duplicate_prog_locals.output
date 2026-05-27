@@ -4,6 +4,6 @@ Diagnostics:
 [
     Diagnostic {
         level: Error,
-        message: "SemanticError { kind: UndefinedVariable(\"x\"), span: MultilinePosition { start_col: 9, start_line: 3, end_col: 10, end_line: 3 }, message: Some(\"undefined identifier 'x'\") }",
+        message: "SemanticError { kind: DuplicateDefinition(\"x\"), span: MultilinePosition { start_col: 14, start_line: 2, end_col: 15, end_line: 2 }, message: Some(\"local variable 'x' already defined at at line 2, columns 12-13\") }",
     },
 ]

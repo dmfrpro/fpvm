@@ -52,6 +52,7 @@ impl SemanticAnalyzer {
                     SymbolInfo {
                         defined_at: MultilinePosition::default(),
                         kind: SymbolKind::Function,
+                        is_prog_local: false,
                     },
                 )
                 .ok();
@@ -95,8 +96,18 @@ impl SemanticAnalyzer {
                         let info = SymbolInfo {
                             defined_at: local.span.clone(),
                             kind: SymbolKind::Variable,
+                            is_prog_local: true,
                         };
-                        self.symbol_table.insert(name.clone(), info).ok();
+                        if let Err(existing) = self.symbol_table.insert(name.clone(), info) {
+                            self.error(
+                                SemanticErrorKind::DuplicateDefinition(name.clone()),
+                                local.span.clone(),
+                                Some(format!(
+                                    "local variable '{}' already defined at {}",
+                                    name, existing.defined_at
+                                )),
+                            );
+                        }
                     }
                 }
             }
@@ -111,6 +122,7 @@ impl SemanticAnalyzer {
                         let info = SymbolInfo {
                             defined_at: param.span.clone(),
                             kind: SymbolKind::Parameter,
+                            is_prog_local: false,
                         };
                         if let Err(existing) = self.symbol_table.insert(name.clone(), info) {
                             self.error(
@@ -167,12 +179,24 @@ impl SemanticAnalyzer {
             }
             NodeKind::SetqNode(id_node, expr) => {
                 if let NodeKind::Identifier(name) = &id_node.kind {
-                    let info = SymbolInfo {
-                        defined_at: id_node.span.clone(),
-                        kind: SymbolKind::Variable,
-                    };
-                    if let Err(_) = self.symbol_table.insert(name.clone(), info) {
-                        // ignore duplicate definition
+                    if let Some(existing) = self.symbol_table.current_scope().get(name) {
+                        if !existing.is_prog_local {
+                            self.error(
+                                SemanticErrorKind::DuplicateDefinition(name.clone()),
+                                id_node.span.clone(),
+                                Some(format!(
+                                    "variable '{}' already defined at {}",
+                                    name, existing.defined_at
+                                )),
+                            );
+                        }
+                    } else {
+                        let info = SymbolInfo {
+                            defined_at: id_node.span.clone(),
+                            kind: SymbolKind::Variable,
+                            is_prog_local: false,
+                        };
+                        self.symbol_table.insert(name.clone(), info).ok();
                     }
                     self.visit_node(expr);
                 } else {
@@ -189,9 +213,17 @@ impl SemanticAnalyzer {
                     let info = SymbolInfo {
                         defined_at: name_node.span.clone(),
                         kind: SymbolKind::Function,
+                        is_prog_local: false,
                     };
-                    if let Err(_) = self.symbol_table.insert(fname.clone(), info) {
-                        // Ignore duplication of symbol
+                    if let Err(existing) = self.symbol_table.insert(fname.clone(), info) {
+                        self.error(
+                            SemanticErrorKind::DuplicateDefinition(fname.clone()),
+                            name_node.span.clone(),
+                            Some(format!(
+                                "function '{}' already defined at {}",
+                                fname, existing.defined_at
+                            )),
+                        );
                     }
                 } else {
                     self.error(
@@ -222,7 +254,7 @@ impl SemanticAnalyzer {
             NodeKind::ProgNode(vars, body_node) => {
                 self.symbol_table.enter_scope();
                 self.push_context(true, self.is_inside_loop());
-                self.add_parameters_to_scope(vars);
+                self.declare_locals(vars);
                 self.visit_node(body_node);
                 self.pop_context();
                 self.symbol_table.exit_scope();
@@ -234,7 +266,7 @@ impl SemanticAnalyzer {
                             self.error(
                                 SemanticErrorKind::EmptyCond,
                                 cond.span.clone(),
-                                Some("Cond expression should not be empty".to_string())
+                                Some("Cond expression should not be empty".to_string()),
                             );
                         }
                     }
@@ -252,7 +284,7 @@ impl SemanticAnalyzer {
                             self.error(
                                 SemanticErrorKind::EmptyCond,
                                 cond.span.clone(),
-                                Some("While condition should not be empty".to_string())
+                                Some("While condition should not be empty".to_string()),
                             );
                         }
                     }
