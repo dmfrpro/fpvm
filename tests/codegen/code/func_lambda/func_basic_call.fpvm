@@ -1,0 +1,5 @@
+(func add_one (x)
+    (plus x 1)
+)
+
+(add_one 10)

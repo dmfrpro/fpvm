@@ -1,0 +1,51 @@
+global global_add_one_1
+global global_is_answer_3
+
+entry __top_level
+
+func __top_level {
+    loadfunc lambda_1
+    setglobal global_add_one_1
+    loadfunc lambda_2
+    setglobal global_is_answer_3
+    loadglobal global_is_answer_3
+    loadint 1
+    callstack 1
+    stdout
+    loadglobal global_is_answer_3
+    loadint 42
+    callstack 1
+    stdout
+    loadnull
+    ret
+}
+
+
+func lambda_1 {
+    arg arg_x_0
+
+    loadarg arg_x_0
+    loadint 1
+    add
+    ret
+}
+
+
+func lambda_2 {
+    arg arg_x_2
+
+    loadarg arg_x_2
+    loadint 42
+    eq
+    condjump cond_1_then
+    loadbool false
+    jump cond_1_end
+    cond_1_then:
+    loadbool true
+    cond_1_end:
+    callstack 0
+    ret
+}
+
+
+

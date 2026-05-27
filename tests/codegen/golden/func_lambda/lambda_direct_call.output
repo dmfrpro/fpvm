@@ -1,0 +1,23 @@
+entry __top_level
+
+func __top_level {
+    loadfunc lambda_1
+    loadint 10
+    callstack 1
+    stdout
+    loadnull
+    ret
+}
+
+
+func lambda_1 {
+    arg arg_x_0
+
+    loadarg arg_x_0
+    loadint 1
+    add
+    ret
+}
+
+
+

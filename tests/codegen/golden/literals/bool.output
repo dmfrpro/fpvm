@@ -1,0 +1,13 @@
+entry __top_level
+
+func __top_level {
+    loadbool true
+    stdout
+    loadbool false
+    stdout
+    loadnull
+    ret
+}
+
+
+

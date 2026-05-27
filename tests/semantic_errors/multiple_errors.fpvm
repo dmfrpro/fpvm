@@ -5,4 +5,4 @@
 
 (return 5)
 
-(func 123 () 42)
+(func syntatically_correct_name_for_func_123 () 42)

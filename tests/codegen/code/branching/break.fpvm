@@ -1,0 +1,19 @@
+(prog (i)
+    (
+        (setq i 0)
+
+        (while true
+            (prog ()
+                (
+                    (setq i (plus i 1))
+
+                    (cond (equal i 3)
+                        (break)
+                    )
+                )
+            )
+        )
+
+        i
+    )
+)

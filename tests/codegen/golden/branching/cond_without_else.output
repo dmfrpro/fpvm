@@ -1,0 +1,31 @@
+entry __top_level
+
+func __top_level {
+    loadint -5
+    call func_only_negative_0
+    stdout
+    loadint 5
+    call func_only_negative_0
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_only_negative_0 {
+    arg arg_x_1
+
+    loadarg arg_x_1
+    loadint 0
+    less
+    condjump cond_1_then
+    loadnull
+    jump cond_1_end
+    cond_1_then:
+    loadarg arg_x_1
+    cond_1_end:
+    ret
+}
+
+
+

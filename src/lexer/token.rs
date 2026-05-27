@@ -1,3 +1,4 @@
+use std::fmt;
 use crate::lexer::LexErrorKind;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -67,4 +68,19 @@ pub enum TokenKind {
 
     // invalid token for parser recovery
     Invalid(LexErrorKind),
+}
+
+
+
+impl fmt::Display for Position {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "[{}:{}:{}]", self.col, self.line, self.offset)
+    }
+}
+
+
+impl fmt::Display for Span {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "start:{}, end{}", self.start, self.end)
+    }
 }

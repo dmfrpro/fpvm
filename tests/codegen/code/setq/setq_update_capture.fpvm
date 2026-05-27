@@ -1,0 +1,17 @@
+(func outer ()
+    (prog (x)
+        (
+            (setq x 1)
+
+            (func inner ()
+                (setq x 2)
+            )
+
+            (inner)
+
+            (return x)
+        )
+    )
+)
+
+(outer)

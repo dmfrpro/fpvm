@@ -1,0 +1,50 @@
+global global_global_limit_0
+
+entry __top_level
+
+func __top_level {
+    loadint 100
+    setglobal global_global_limit_0
+    loadnull
+    ret
+}
+
+
+func func_clamp_1 {
+    arg arg_x_2
+
+    loadarg arg_x_2
+    loadint 0
+    less
+    condjump cond_1_then
+    loadarg arg_x_2
+    loadglobal global_global_limit_0
+    greater
+    condjump cond_2_then
+    loadarg arg_x_2
+    jump cond_2_end
+    cond_2_then:
+    loadglobal global_global_limit_0
+    cond_2_end:
+    jump cond_1_end
+    cond_1_then:
+    loadint 0
+    cond_1_end:
+    ret
+}
+
+
+func func_process_3 {
+    arg arg_value_4
+    local local_result_5
+
+    loadarg arg_value_4
+    call func_clamp_1
+    setlocal local_result_5
+    loadnull
+    prog_3_end:
+    ret
+}
+
+
+

@@ -18,17 +18,10 @@ impl SemanticAnalyzer {
             in_loop: vec![false],
         };
 
-        let builtins = [
-            // Std
-            "plus", "minus", "times", "divide",
-            "head", "tail", "cons",
-            "equal", "nonequal", "less", "lesseq", "greater", "greatereq",
-            "isint", "isreal", "isbool", "isnull", "isatom", "islist",
-            "and", "or", "xor", "not",
-            "eval",
-        ];
-
-        for builtin in builtins {
+        for builtin in [
+            "+", "-", "*", "/", "lesseq", "greater", "equal", "times", "minus", "plus", "mod",
+            "print", "eval", "less",
+        ] {
             analyzer
                 .symbol_table
                 .insert(

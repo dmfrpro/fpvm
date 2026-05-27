@@ -1,0 +1,13 @@
+(prog (x)
+    (
+        (setq x 1)
+
+        (prog ()
+            (
+                (setq x 2)
+            )
+        )
+
+        x
+    )
+)

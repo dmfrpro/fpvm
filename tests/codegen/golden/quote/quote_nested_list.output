@@ -1,0 +1,17 @@
+entry __top_level
+
+func __top_level {
+    loadatom plus
+    loadint 1
+    loadatom minus
+    loadint 5
+    loadint 3
+    makelist 3
+    makelist 3
+    stdout
+    loadnull
+    ret
+}
+
+
+

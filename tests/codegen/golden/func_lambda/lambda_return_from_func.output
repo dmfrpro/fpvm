@@ -1,0 +1,29 @@
+entry __top_level
+
+func __top_level {
+    call func_make_inc_0
+    loadint 10
+    callstack 1
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_make_inc_0 {
+    loadfunc lambda_2
+    ret
+}
+
+
+func lambda_2 {
+    arg arg_x_1
+
+    loadarg arg_x_1
+    loadint 1
+    add
+    ret
+}
+
+
+

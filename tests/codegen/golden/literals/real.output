@@ -1,0 +1,15 @@
+entry __top_level
+
+func __top_level {
+    loadreal 4.2
+    stdout
+    loadreal -4.2
+    stdout
+    loadreal 0
+    stdout
+    loadnull
+    ret
+}
+
+
+

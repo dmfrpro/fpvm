@@ -1,0 +1,9 @@
+entry __top_level
+
+func __top_level {
+    loadnull
+    ret
+}
+
+
+

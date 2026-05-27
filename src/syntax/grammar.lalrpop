@@ -1,4 +1,5 @@
-use crate::syntax::node::{Node, NodeKind, SyntaxErrorKind, SyntaxError, MultilinePosition};
+use crate::syntax::node::{Node, NodeKind, MultilinePosition};
+use crate::syntax::error::{SyntaxErrorKind, SyntaxError};
 use crate::lexer::token::{TokenKind, Position};
 use crate::lexer::{LexErrorKind};
 

@@ -1,0 +1,42 @@
+entry __top_level
+
+func __top_level {
+    loadint -5
+    call func_classify_0
+    stdout
+    loadint 0
+    call func_classify_0
+    stdout
+    loadint 7
+    call func_classify_0
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_classify_0 {
+    arg arg_x_1
+
+    loadarg arg_x_1
+    loadint 0
+    less
+    condjump cond_1_then
+    loadarg arg_x_1
+    loadint 0
+    eq
+    condjump cond_2_then
+    loadint 1
+    jump cond_2_end
+    cond_2_then:
+    loadint 0
+    cond_2_end:
+    jump cond_1_end
+    cond_1_then:
+    loadint -1
+    cond_1_end:
+    ret
+}
+
+
+

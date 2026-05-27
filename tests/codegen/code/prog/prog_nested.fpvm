@@ -1,0 +1,9 @@
+(func f ()
+    (prog (x)
+        (prog () 
+            (
+                (setq x 2)
+            )
+        )
+    )
+)

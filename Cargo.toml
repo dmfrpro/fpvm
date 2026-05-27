@@ -19,6 +19,14 @@ path = "src/bin/lexi.rs"
 name = "syntax_bin" 
 path = "src/bin/syntax_bin.rs"
 
+[[bin]]
+name = "codegen_bin" 
+path = "src/bin/codegen_bin.rs"
+
+[[bin]]
+name = "dump_tool" 
+path = "src/bin/dump_tool.rs"
+
 [dependencies]
 lalrpop-util = { version = "0.23.0" }
 

@@ -1,0 +1,26 @@
+entry __top_level
+
+func __top_level {
+    call func_outer_0
+    stdout
+    loadnull
+    ret
+}
+
+
+func func_outer_0 {
+    call func_inner_1
+    jump prog_1_end
+    loadnull
+    prog_1_end:
+    ret
+}
+
+
+func func_inner_1 {
+    loadint 1
+    ret
+}
+
+
+
