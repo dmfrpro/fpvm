@@ -99,26 +99,35 @@ impl<'a> CodeGenerator<'a> {
     }
 
     fn builtin_instruction(name: &str, argc: usize) -> Result<Option<Instruction>, CodegenError> {
-        let instruction = match name {
-            "plus" => Instruction::Add,
-            "minus" => Instruction::Sub,
-            "times" => Instruction::Mul,
-            "divide" => Instruction::Div,
-            "mod" => Instruction::Mod,
+        let (instruction, expected_argc) = match name {
+            "plus" => (Instruction::Add, 2),
+            "minus" => (Instruction::Sub, 2),
+            "times" => (Instruction::Mul, 2),
+            "divide" => (Instruction::Div, 2),
+            "mod" => (Instruction::Mod, 2),
 
-            "equal" => Instruction::Eq,
-            "nonequal" => Instruction::Neq,
-            "less" => Instruction::Less,
-            "lesseq" => Instruction::Leq,
-            "greater" => Instruction::Greater,
-            "greatereq" => Instruction::Geq,
+            "equal" => (Instruction::Eq, 2),
+            "nonequal" => (Instruction::Neq, 2),
+            "less" => (Instruction::Less, 2),
+            "lesseq" => (Instruction::Leq, 2),
+            "greater" => (Instruction::Greater, 2),
+            "greatereq" => (Instruction::Geq, 2),
+
+            "head" => (Instruction::Head, 1),
+            "tail" => (Instruction::Tail, 1),
+            "cons" => (Instruction::Cons, 2),
+            "isnull" => (Instruction::IsNull, 1),
+            "length" => (Instruction::Length, 1),
 
             _ => return Ok(None),
         };
 
-        if argc != 2 {
+        if argc != expected_argc {
             return Err(CodegenError::InvalidNode {
-                message: format!("builtin '{}' expects 2 arguments, got {}", name, argc),
+                message: format!(
+                    "builtin '{}' expects {} arguments, got {}",
+                    name, expected_argc, argc
+                ),
             });
         }
 

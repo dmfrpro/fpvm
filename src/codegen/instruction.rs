@@ -55,4 +55,14 @@ pub enum Instruction {
 
     // Return
     Ret,
+
+    // List operations
+    Head,
+    Tail,
+    Cons,
+    IsNull,
+    Length,
+
+    // Eval
+    Eval,
 }
