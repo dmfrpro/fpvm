@@ -31,6 +31,10 @@ path = "src/bin/dump_tool.rs"
 name = "fpvm"
 path = "src/bin/fpvm.rs"
 
+[[bin]]
+name = "fp-run"
+path = "src/bin/fp-run.rs"
+
 [dependencies]
 lalrpop-util = { version = "0.23.0" }
 
