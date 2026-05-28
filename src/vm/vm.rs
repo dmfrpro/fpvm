@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use super::bytecode::{Function, Instruction, Program};
+use super::bytecode::{Instruction, Program};
 use super::value::Value;
 
 #[derive(Debug, Clone)]
@@ -76,7 +76,7 @@ impl Vm {
                 continue;
             }
 
-            let instr = func.body[pc].clone();
+            let instr = &func.body[pc];
             self.call_stack[frame_idx].pc += 1;
 
             step += 1;
@@ -84,178 +84,7 @@ impl Vm {
                 return Err("Step limit exceeded".to_string());
             }
 
-            match instr {
-                Instruction::LoadNull => self.push(Value::Null),
-                Instruction::LoadInt(v) => self.push(Value::Int(v)),
-                Instruction::LoadReal(v) => self.push(Value::Real(v)),
-                Instruction::LoadBool(v) => self.push(Value::Bool(v)),
-                Instruction::LoadAtom(v) => self.push(Value::Atom(v)),
-                Instruction::LoadFunc(label) => {
-                    let func = self.program.functions.get(&label).cloned();
-                    if let Some(func) = func {
-                        if !func.captures.is_empty() {
-                            let mut captures = Vec::new();
-                            for cap_label in &func.captures {
-                                captures.push(self.lookup_current(cap_label)?);
-                            }
-                            self.push(Value::Closure { label, captures });
-                        } else {
-                            self.push(Value::Func(label));
-                        }
-                    } else {
-                        return Err(format!("loadfunc: unknown function {}", label));
-                    }
-                }
-                Instruction::MakeList(n) => {
-                    if n == 0 {
-                        self.push(Value::Null);
-                    } else {
-                        let mut items = Vec::new();
-                        for _ in 0..n {
-                            items.push(self.pop()?);
-                        }
-                        items.reverse();
-                        self.push(Value::List(items));
-                    }
-                }
-                Instruction::LoadLocal(label) => {
-                    let val = self
-                        .current_frame()
-                        .locals
-                        .get(&label)
-                        .cloned()
-                        .ok_or_else(|| format!("Undefined local: {}", label))?;
-                    self.push(val);
-                }
-                Instruction::LoadArg(label) => {
-                    let val = self
-                        .current_frame()
-                        .args
-                        .get(&label)
-                        .cloned()
-                        .ok_or_else(|| format!("Undefined arg: {}", label))?;
-                    self.push(val);
-                }
-                Instruction::LoadCapture(label) => {
-                    let val = self
-                        .current_frame()
-                        .captures
-                        .get(&label)
-                        .cloned()
-                        .ok_or_else(|| format!("Undefined capture: {}", label))?;
-                    self.push(val);
-                }
-                Instruction::LoadGlobal(label) => {
-                    let val = self
-                        .globals
-                        .get(&label)
-                        .cloned()
-                        .ok_or_else(|| format!("Undefined global: {}", label))?;
-                    self.push(val);
-                }
-                Instruction::SetLocal(label) => {
-                    let val = self.pop()?;
-                    self.current_frame().locals.insert(label, val);
-                }
-                Instruction::SetArg(label) => {
-                    let val = self.pop()?;
-                    self.current_frame().args.insert(label, val);
-                }
-                Instruction::SetCapture(label) => {
-                    let val = self.pop()?;
-                    self.current_frame().captures.insert(label, val);
-                }
-                Instruction::SetGlobal(label) => {
-                    let val = self.pop()?;
-                    self.globals.insert(label, val);
-                }
-                Instruction::Add => self.binop_int(|a, b| Value::Int(a + b))?,
-                Instruction::Sub => self.binop_int(|a, b| Value::Int(a - b))?,
-                Instruction::Mul => self.binop_int(|a, b| Value::Int(a * b))?,
-                Instruction::Div => self.binop_int(|a, b| Value::Int(a / b))?,
-                Instruction::Mod => self.binop_int(|a, b| Value::Int(a % b))?,
-                Instruction::Eq => self.binop_cmp(|a, b| Value::Bool(a == b))?,
-                Instruction::Neq => self.binop_cmp(|a, b| Value::Bool(a != b))?,
-                Instruction::Less => self.binop_cmp(|a, b| Value::Bool(a < b))?,
-                Instruction::Leq => self.binop_cmp(|a, b| Value::Bool(a <= b))?,
-                Instruction::Greater => self.binop_cmp(|a, b| Value::Bool(a > b))?,
-                Instruction::Geq => self.binop_cmp(|a, b| Value::Bool(a >= b))?,
-                Instruction::Label(_) => {}
-                Instruction::Jump(label) => {
-                    let target = self.resolve_label(&func_label, &label)?;
-                    self.current_frame().pc = target + 1;
-                }
-                Instruction::CondJump(label) => {
-                    let cond = self.pop()?;
-                    if matches!(cond, Value::Bool(true)) {
-                        let target = self.resolve_label(&func_label, &label)?;
-                        self.current_frame().pc = target + 1;
-                    }
-                }
-                Instruction::Call(label) => {
-                    let func = self
-                        .program
-                        .functions
-                        .get(&label)
-                        .cloned()
-                        .ok_or_else(|| format!("Unknown function: {}", label))?;
-                    let mut args = Vec::new();
-                    for _ in 0..func.args.len() {
-                        args.push(self.pop()?);
-                    }
-                    args.reverse();
-
-                    let mut captures = Vec::new();
-                    if !func.captures.is_empty() {
-                        for cap_label in &func.captures {
-                            captures.push(self.lookup_current(cap_label)?);
-                        }
-                    }
-
-                    self.call_function(label, args, captures)?;
-                }
-                Instruction::CallStack { argc } => {
-                    let mut args = Vec::new();
-                    for _ in 0..argc {
-                        args.push(self.pop()?);
-                    }
-                    args.reverse();
-
-                    let callee = self.pop()?;
-                    match callee {
-                        Value::Func(label) => {
-                            self.call_function(label, args, Vec::new())?;
-                        }
-                        Value::Closure { label, captures } => {
-                            self.call_function(label, args, captures)?;
-                        }
-                        Value::Atom(name) => {
-                            let result = self.apply_value(&Value::Atom(name), &args)?;
-                            self.push(result);
-                        }
-                        _ => return Err(format!("callstack: not a function: {:?}", callee)),
-                    }
-                }
-                Instruction::Pop => {
-                    self.pop()?;
-                }
-                Instruction::Stdout => {
-                    let val = self.pop()?;
-                    self.output.push(format!("{}", val));
-                }
-                Instruction::Ret => {
-                    self.do_ret()?;
-                }
-                Instruction::Head => self.builtin_head()?,
-                Instruction::Tail => self.builtin_tail()?,
-                Instruction::Cons => self.builtin_cons()?,
-                Instruction::IsNull => self.builtin_isnull()?,
-                Instruction::Length => self.builtin_length()?,
-                Instruction::Or => self.builtin_or()?,
-                Instruction::Not => self.builtin_not()?,
-                Instruction::IsList => self.builtin_islist()?,
-                Instruction::Eval => self.builtin_eval()?,
-            }
+            self.execute_instruction(instr, &func_label)?;
         }
 
         Ok(Value::Null)
@@ -305,16 +134,193 @@ impl Vm {
             .ok_or_else(|| format!("Unknown label: {}", label))
     }
 
-    fn binop_int<F>(&mut self, op: F) -> Result<(), String>
+    fn execute_instruction(&mut self, instr: &Instruction, func_label: &str) -> Result<(), String> {
+        match instr {
+            Instruction::LoadNull => self.push(Value::Null),
+            Instruction::LoadInt(v) => self.push(Value::Int(*v)),
+            Instruction::LoadReal(v) => self.push(Value::Real(*v)),
+            Instruction::LoadBool(v) => self.push(Value::Bool(*v)),
+            Instruction::LoadAtom(v) => self.push(Value::Atom(v.clone())),
+            Instruction::LoadFunc(label) => {
+                let func = self.program.functions.get(label).cloned();
+                if let Some(func) = func {
+                    if !func.captures.is_empty() {
+                        let mut captures = Vec::new();
+                        for cap_label in &func.captures {
+                            captures.push(self.lookup_current(cap_label)?);
+                        }
+                        self.push(Value::Closure {
+                            label: label.clone(),
+                            captures,
+                        });
+                    } else {
+                        self.push(Value::Func(label.clone()));
+                    }
+                } else {
+                    return Err(format!("loadfunc: unknown function {}", label));
+                }
+            }
+            Instruction::MakeList(n) => {
+                if *n == 0 {
+                    self.push(Value::Null);
+                } else {
+                    let mut items = Vec::new();
+                    for _ in 0..*n {
+                        items.push(self.pop()?);
+                    }
+                    items.reverse();
+                    self.push(Value::List(items));
+                }
+            }
+            Instruction::LoadLocal(label) => {
+                let val = self
+                    .current_frame()
+                    .locals
+                    .get(label)
+                    .cloned()
+                    .ok_or_else(|| format!("Undefined local: {}", label))?;
+                self.push(val);
+            }
+            Instruction::LoadArg(label) => {
+                let val = self
+                    .current_frame()
+                    .args
+                    .get(label)
+                    .cloned()
+                    .ok_or_else(|| format!("Undefined arg: {}", label))?;
+                self.push(val);
+            }
+            Instruction::LoadCapture(label) => {
+                let val = self
+                    .current_frame()
+                    .captures
+                    .get(label)
+                    .cloned()
+                    .ok_or_else(|| format!("Undefined capture: {}", label))?;
+                self.push(val);
+            }
+            Instruction::LoadGlobal(label) => {
+                let val = self
+                    .globals
+                    .get(label)
+                    .cloned()
+                    .ok_or_else(|| format!("Undefined global: {}", label))?;
+                self.push(val);
+            }
+            Instruction::SetLocal(label) => {
+                let val = self.pop()?;
+                self.current_frame().locals.insert(label.clone(), val);
+            }
+            Instruction::SetArg(label) => {
+                let val = self.pop()?;
+                self.current_frame().args.insert(label.clone(), val);
+            }
+            Instruction::SetCapture(label) => {
+                let val = self.pop()?;
+                self.current_frame().captures.insert(label.clone(), val);
+            }
+            Instruction::SetGlobal(label) => {
+                let val = self.pop()?;
+                self.globals.insert(label.clone(), val);
+            }
+            Instruction::Add => self.binop_num(|a, b| a + b, |a, b| a + b)?,
+            Instruction::Sub => self.binop_num(|a, b| a - b, |a, b| a - b)?,
+            Instruction::Mul => self.binop_num(|a, b| a * b, |a, b| a * b)?,
+            Instruction::Div => self.binop_num(|a, b| a / b, |a, b| a / b)?,
+            Instruction::Mod => self.binop_num(|a, b| a % b, |a, b| a % b)?,
+            Instruction::Eq => self.binop_cmp(|a, b| Value::Bool(a == b))?,
+            Instruction::Neq => self.binop_cmp(|a, b| Value::Bool(a != b))?,
+            Instruction::Less => self.binop_cmp(|a, b| Value::Bool(a < b))?,
+            Instruction::Leq => self.binop_cmp(|a, b| Value::Bool(a <= b))?,
+            Instruction::Greater => self.binop_cmp(|a, b| Value::Bool(a > b))?,
+            Instruction::Geq => self.binop_cmp(|a, b| Value::Bool(a >= b))?,
+            Instruction::Label(_) => {}
+            Instruction::Jump(label) => {
+                let target = self.resolve_label(func_label, label)?;
+                self.current_frame().pc = target + 1;
+            }
+            Instruction::CondJump(label) => {
+                let cond = self.pop()?;
+                if matches!(cond, Value::Bool(true)) {
+                    let target = self.resolve_label(func_label, label)?;
+                    self.current_frame().pc = target + 1;
+                }
+            }
+            Instruction::Call(label) => {
+                let func = self
+                    .program
+                    .functions
+                    .get(label)
+                    .cloned()
+                    .ok_or_else(|| format!("Unknown function: {}", label))?;
+                let mut args = Vec::new();
+                for _ in 0..func.args.len() {
+                    args.push(self.pop()?);
+                }
+                args.reverse();
+
+                let mut captures = Vec::new();
+                if !func.captures.is_empty() {
+                    for cap_label in &func.captures {
+                        captures.push(self.lookup_current(cap_label)?);
+                    }
+                }
+
+                self.call_function(label.clone(), args, captures)?;
+            }
+            Instruction::CallStack { argc } => {
+                let mut args = Vec::new();
+                for _ in 0..*argc {
+                    args.push(self.pop()?);
+                }
+                args.reverse();
+
+                let callee = self.pop()?;
+                match callee {
+                    Value::Func(label) => {
+                        self.call_function(label, args, Vec::new())?;
+                    }
+                    Value::Closure { label, captures } => {
+                        self.call_function(label, args, captures)?;
+                    }
+                    Value::Atom(name) => {
+                        let result = self.apply_value(&Value::Atom(name), &args)?;
+                        self.push(result);
+                    }
+                    _ => return Err(format!("callstack: not a function: {:?}", callee)),
+                }
+            }
+            Instruction::Pop => {
+                self.pop()?;
+            }
+            Instruction::Stdout => {
+                let val = self.pop()?;
+                self.output.push(format!("{}", val));
+            }
+            Instruction::Ret => {
+                self.do_ret()?;
+            }
+            Instruction::Head => self.builtin_head()?,
+            Instruction::Tail => self.builtin_tail()?,
+            Instruction::Cons => self.builtin_cons()?,
+            Instruction::IsNull => self.builtin_isnull()?,
+            Instruction::Length => self.builtin_length()?,
+            Instruction::Or => self.builtin_or()?,
+            Instruction::Not => self.builtin_not()?,
+            Instruction::IsList => self.builtin_islist()?,
+            Instruction::Eval => self.builtin_eval()?,
+        }
+        Ok(())
+    }
+
+    fn binop_num<F, G>(&mut self, int_op: F, real_op: G) -> Result<(), String>
     where
-        F: Fn(i64, i64) -> Value,
+        F: Fn(i64, i64) -> i64,
+        G: Fn(f64, f64) -> f64,
     {
         let b = self.pop()?;
         let a = self.pop()?;
-        match (a, b) {
-            (Value::Int(a), Value::Int(b)) => self.push(op(a, b)),
-            _ => return Err(format!("Type error in arithmetic")),
-        }
+        self.push(apply_numeric(a, b, int_op, real_op)?);
         Ok(())
     }
 
@@ -507,18 +513,29 @@ impl Vm {
                     if args.len() != 2 {
                         return Err(format!("{} expects 2 args", name));
                     }
-                    let (Value::Int(a), Value::Int(b)) = (&args[0], &args[1]) else {
-                        return Err(format!("{}: type error", name));
-                    };
-                    let result = match name.as_str() {
-                        "plus" => a + b,
-                        "minus" => a - b,
-                        "times" => a * b,
-                        "divide" => a / b,
-                        "mod" => a % b,
-                        _ => unreachable!(),
-                    };
-                    Ok(Value::Int(result))
+                    let a = args[0].clone();
+                    let b = args[1].clone();
+                    let op_name = name.as_str();
+                    apply_numeric(
+                        a,
+                        b,
+                        |a, b| match op_name {
+                            "plus" => a + b,
+                            "minus" => a - b,
+                            "times" => a * b,
+                            "divide" => a / b,
+                            "mod" => a % b,
+                            _ => unreachable!(),
+                        },
+                        |a, b| match op_name {
+                            "plus" => a + b,
+                            "minus" => a - b,
+                            "times" => a * b,
+                            "divide" => a / b,
+                            "mod" => a % b,
+                            _ => unreachable!(),
+                        },
+                    )
                 }
                 "equal" | "nonequal" | "less" | "lesseq" | "greater" | "greatereq" => {
                     if args.len() != 2 {
@@ -629,7 +646,7 @@ impl Vm {
                 continue;
             }
 
-            let instr = func.body[pc].clone();
+            let instr = &func.body[pc];
             self.call_stack[frame_idx].pc += 1;
 
             step += 1;
@@ -637,185 +654,7 @@ impl Vm {
                 return Err("Step limit exceeded".to_string());
             }
 
-            match instr {
-                Instruction::LoadNull => self.push(Value::Null),
-                Instruction::LoadInt(v) => self.push(Value::Int(v)),
-                Instruction::LoadReal(v) => self.push(Value::Real(v)),
-                Instruction::LoadBool(v) => self.push(Value::Bool(v)),
-                Instruction::LoadAtom(v) => self.push(Value::Atom(v)),
-                Instruction::LoadFunc(l) => {
-                    let f = self.program.functions.get(&l).cloned();
-                    if let Some(f) = f {
-                        if !f.captures.is_empty() {
-                            let mut caps = Vec::new();
-                            for cap in &f.captures {
-                                caps.push(self.lookup_current(cap)?);
-                            }
-                            self.push(Value::Closure {
-                                label: l,
-                                captures: caps,
-                            });
-                        } else {
-                            self.push(Value::Func(l));
-                        }
-                    } else {
-                        return Err(format!("loadfunc: unknown function {}", l));
-                    }
-                }
-                Instruction::MakeList(n) => {
-                    if n == 0 {
-                        self.push(Value::Null);
-                    } else {
-                        let mut items = Vec::new();
-                        for _ in 0..n {
-                            items.push(self.pop()?);
-                        }
-                        items.reverse();
-                        self.push(Value::List(items));
-                    }
-                }
-                Instruction::LoadLocal(l) => {
-                    let v = self
-                        .current_frame()
-                        .locals
-                        .get(&l)
-                        .cloned()
-                        .ok_or_else(|| format!("Undefined local: {}", l))?;
-                    self.push(v);
-                }
-                Instruction::LoadArg(l) => {
-                    let v = self
-                        .current_frame()
-                        .args
-                        .get(&l)
-                        .cloned()
-                        .ok_or_else(|| format!("Undefined arg: {}", l))?;
-                    self.push(v);
-                }
-                Instruction::LoadCapture(l) => {
-                    let v = self
-                        .current_frame()
-                        .captures
-                        .get(&l)
-                        .cloned()
-                        .ok_or_else(|| format!("Undefined capture: {}", l))?;
-                    self.push(v);
-                }
-                Instruction::LoadGlobal(l) => {
-                    let v = self
-                        .globals
-                        .get(&l)
-                        .cloned()
-                        .ok_or_else(|| format!("Undefined global: {}", l))?;
-                    self.push(v);
-                }
-                Instruction::SetLocal(l) => {
-                    let v = self.pop()?;
-                    self.current_frame().locals.insert(l, v);
-                }
-                Instruction::SetArg(l) => {
-                    let v = self.pop()?;
-                    self.current_frame().args.insert(l, v);
-                }
-                Instruction::SetCapture(l) => {
-                    let v = self.pop()?;
-                    self.current_frame().captures.insert(l, v);
-                }
-                Instruction::SetGlobal(l) => {
-                    let v = self.pop()?;
-                    self.globals.insert(l, v);
-                }
-                Instruction::Add => self.binop_int(|a, b| Value::Int(a + b))?,
-                Instruction::Sub => self.binop_int(|a, b| Value::Int(a - b))?,
-                Instruction::Mul => self.binop_int(|a, b| Value::Int(a * b))?,
-                Instruction::Div => self.binop_int(|a, b| Value::Int(a / b))?,
-                Instruction::Mod => self.binop_int(|a, b| Value::Int(a % b))?,
-                Instruction::Eq => self.binop_cmp(|a, b| Value::Bool(a == b))?,
-                Instruction::Neq => self.binop_cmp(|a, b| Value::Bool(a != b))?,
-                Instruction::Less => self.binop_cmp(|a, b| Value::Bool(a < b))?,
-                Instruction::Leq => self.binop_cmp(|a, b| Value::Bool(a <= b))?,
-                Instruction::Greater => self.binop_cmp(|a, b| Value::Bool(a > b))?,
-                Instruction::Geq => self.binop_cmp(|a, b| Value::Bool(a >= b))?,
-                Instruction::Label(_) => {}
-                Instruction::Jump(l) => {
-                    let t = self.resolve_label(&func_label, &l)?;
-                    self.current_frame().pc = t + 1;
-                }
-                Instruction::CondJump(l) => {
-                    let c = self.pop()?;
-                    if matches!(c, Value::Bool(true)) {
-                        let t = self.resolve_label(&func_label, &l)?;
-                        self.current_frame().pc = t + 1;
-                    }
-                }
-                Instruction::Call(l) => {
-                    let f = self
-                        .program
-                        .functions
-                        .get(&l)
-                        .cloned()
-                        .ok_or_else(|| format!("Unknown function: {}", l))?;
-                    let mut a = Vec::new();
-                    for _ in 0..f.args.len() {
-                        a.push(self.pop()?);
-                    }
-                    a.reverse();
-                    let mut c = Vec::new();
-                    if !f.captures.is_empty() {
-                        for cap in &f.captures {
-                            c.push(self.lookup_current(cap)?);
-                        }
-                    }
-                    self.call_function(l, a, c)?;
-                }
-                Instruction::CallStack { argc } => {
-                    let mut a = Vec::new();
-                    for _ in 0..argc {
-                        a.push(self.pop()?);
-                    }
-                    a.reverse();
-                    let callee = self.pop()?;
-                    match callee {
-                        Value::Func(l) => {
-                            self.call_function(l, a, Vec::new())?;
-                        }
-                        Value::Closure {
-                            label: l,
-                            captures: c,
-                        } => {
-                            self.call_function(l, a, c)?;
-                        }
-                        Value::Atom(name) => {
-                            let result = self.apply_value(&Value::Atom(name), &a)?;
-                            self.push(result);
-                        }
-                        _ => return Err(format!("callstack: not a function: {:?}", callee)),
-                    }
-                }
-                Instruction::Pop => {
-                    self.pop()?;
-                }
-                Instruction::Stdout => {
-                    let v = self.pop()?;
-                    self.output.push(format!("{}", v));
-                }
-                Instruction::Ret => {
-                    self.do_ret()?;
-                }
-                Instruction::Head => self.builtin_head()?,
-                Instruction::Tail => self.builtin_tail()?,
-                Instruction::Cons => self.builtin_cons()?,
-                Instruction::IsNull => self.builtin_isnull()?,
-                Instruction::Length => self.builtin_length()?,
-                Instruction::Or => self.builtin_or()?,
-                Instruction::Not => self.builtin_not()?,
-                Instruction::IsList => self.builtin_islist()?,
-                Instruction::Eval => {
-                    let v = self.pop()?;
-                    let r = self.eval_value(&v)?;
-                    self.push(r);
-                }
-            }
+            self.execute_instruction(instr, &func_label)?;
         }
     }
 
@@ -825,5 +664,19 @@ impl Vm {
 
     pub fn take_output(&mut self) -> Vec<String> {
         std::mem::take(&mut self.output)
+    }
+}
+
+fn apply_numeric<F, G>(a: Value, b: Value, int_op: F, real_op: G) -> Result<Value, String>
+where
+    F: Fn(i64, i64) -> i64,
+    G: Fn(f64, f64) -> f64,
+{
+    match (a, b) {
+        (Value::Int(a), Value::Int(b)) => Ok(Value::Int(int_op(a, b))),
+        (Value::Int(a), Value::Real(b)) => Ok(Value::Real(real_op(a as f64, b))),
+        (Value::Real(a), Value::Int(b)) => Ok(Value::Real(real_op(a, b as f64))),
+        (Value::Real(a), Value::Real(b)) => Ok(Value::Real(real_op(a, b))),
+        _ => Err("Type error in arithmetic".to_string()),
     }
 }

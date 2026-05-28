@@ -1,52 +1,74 @@
-### Arithmetic operations:
+# Instruction Reference
 
-These commands take two items (a / b / <>) from stack and put result on top of stack (e. g. a - b)
-add - returns int if both arguments are ints. Otherwise, real
-sub - returns int if both arguments are ints. Otherwise, real
-mul - returns int if both arguments are ints. Otherwise, real
-div - returns int if both arguments are ints. Otherwise, real
-mod - runtime checks for both arguments to be ints
+## Arithmetic Operations
 
-### Boolean operations:
-Only take real, int, bool, list (only for eq and neq) as arguments. Puts bool on top of stack
-eq
-neq
-less
-leq
-greater
-geq
+These commands take two items from the stack and put the result
+on top of the stack.
 
-### Jumps:
+- `add` — returns `int` if both arguments are ints, otherwise `real`
+- `sub` — returns `int` if both arguments are ints, otherwise `real`
+- `mul` — returns `int` if both arguments are ints, otherwise `real`
+- `div` — returns `int` if both arguments are ints, otherwise `real`
+- `mod` — returns `int` if both arguments are ints, otherwise `real`
 
+## Boolean Operations
+
+Only take `real`, `int`, `bool`, `list` (only for `eq` and `neq`)
+as arguments. Puts `bool` on top of the stack.
+
+- `eq`
+- `neq`
+- `less`
+- `leq`
+- `greater`
+- `geq`
+
+## Jumps
+
+```text
 jump <label>
-condjump <label> - takes bool from top of stack and jumps on true
-<label>: - label to jump to
+condjump <label>
+<label>:
+```
 
-### Functions:
-func <funclabel> {
-<captures> - interpreter binds addr of captures to func
-	<args>
-	<locals>
+`condjump` takes a `bool` from the top of the stack and jumps on
+`true`.
 
-	<body>
+## Functions
 
-  }
-capture: capture <varlabel>, … (captures addr of label)
-args: arg <varlabel>, …
-locals: local <varlabel>, …
-Body: if no return, return null
-loadlocal <varlabel> - load value of variable to top of stack
-loadcapture <varlabel>
-loadarg <varlabel>
-loadglobal <varlabel>
-setlocal <varlable> - sets value to local variable value of top of stack
-setcapture <varlabel> - 
-setarg <varlabel>
-setglobal <varlabel>
-call <funclabel> - calls <funclabel> with args on top of stack (checks number of args to call)
-callstack <argc> - calls function from top of stack with args
-ret - returns single elem from stack (if more than one -> runtime error) 
-### Return
+```text
+func <func_label> {
+    capture <var_label>
+    arg <var_label>
+    local <var_label>
+
+    <body>
+}
+```
+
+- `capture` — interpreter binds address of captures to the function
+- `args` — function arguments
+- `locals` — local variables
+- Body: if no explicit return, returns `null`
+
+### Variable Instructions
+
+- `loadlocal <var_label>` — load value of variable to top of stack
+- `loadcapture <var_label>`
+- `loadarg <var_label>`
+- `loadglobal <var_label>`
+- `setlocal <var_label>` — sets local variable to top of stack value
+- `setcapture <var_label>`
+- `setarg <var_label>`
+- `setglobal <var_label>`
+
+### Call Instructions
+
+- `call <func_label>` — calls function with args on top of stack
+- `callstack <argc>` — calls function from top of stack with args
+- `ret` — returns single element from stack
+
+## Return
 
 ```text
 ret
@@ -54,26 +76,39 @@ ret
 
 Returns the top stack value from the current function.
 
-он возвращает значение. При этом он удаляет это значение со стека или нет и как вообще происходит возврат. Покаи на примере
-### Globals:
-	global <varlabel>
+## Globals
 
-### Consts:
-Loads values/addrs to the top of stack
-loadnull
-loadint <value>
-loadreal <value>
-loadbool <value>
-loadfunc <funclabel> - finds <funclabel> addr and puts it on top of stack (for callstack)
-makelist <n> - takes n args from top of stack and puts single list with <n> elems
+```text
+global <var_label>
+```
 
-### StdLib
-Separate file with bytecode for stdlib. Metadata for the file should contain all labels and (preloaded or loaded on demand?) loaded for execution.
+## Constants
 
-### Virtual Function
-createvfunc <newfunclabel> <basefunclabel>
-Its own <newfunclabel>
-Label on base function
-Captured Args
-setcapturearg <funclabel> <varlabel> - binds addr of var`label to the first arg
-setcaptureargconst <real,int,bool,list> - value from stack
+Loads values or addresses to the top of the stack.
+
+- `loadnull`
+- `loadint <value>`
+- `loadreal <value>`
+- `loadbool <value>`
+- `loadfunc <func_label>` — finds function address and puts it on stack
+- `makelist <n>` — takes `n` args from stack and puts a single list
+
+## StdLib
+
+Separate file with bytecode for stdlib. Metadata for the file should
+contain all labels and be loaded for execution.
+
+## Virtual Function
+
+```text
+createvfunc <new_func_label> <base_func_label>
+```
+
+- Its own `new_func_label`
+- Label on base function
+- Captured args
+
+```text
+setcapturearg <func_label> <var_label>
+setcaptureargconst <real,int,bool,list>
+```

@@ -1,0 +1,22 @@
+(func f_err (a b)
+    (prog (x y k) 
+        (
+            (setq k 5)
+            (setq x (plus a k))
+            (setq y (minus b k))
+            (cons x (cons y null))
+        )
+    )
+)
+
+(func f_1 (a b)
+    (prog (k)
+        (
+            (setq k (plus a b))
+            (return k)
+        )
+    )
+)
+
+(f_err 1 2)
+(f_1 3 4)

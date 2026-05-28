@@ -11,7 +11,6 @@ pub struct Scope {
 pub struct SymbolInfo {
     pub defined_at: crate::syntax::MultilinePosition,
     pub kind: SymbolKind,
-    pub is_prog_local: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -33,6 +32,10 @@ impl Scope {
             self.symbols.insert(name, info);
             Ok(())
         }
+    }
+
+    pub fn update_or_insert(&mut self, name: String, info: SymbolInfo) {
+        self.symbols.insert(name, info);
     }
 
     pub fn lookup(&self, name: &str) -> Option<&SymbolInfo> {
@@ -87,6 +90,10 @@ impl SymbolTable {
 
     pub fn insert(&mut self, name: String, info: SymbolInfo) -> Result<(), SymbolInfo> {
         self.current_scope_mut().insert(name, info)
+    }
+
+    pub fn update_or_insert(&mut self, name: String, info: SymbolInfo) {
+        self.current_scope_mut().update_or_insert(name, info);
     }
 }
 

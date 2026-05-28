@@ -232,6 +232,42 @@ impl SymbolTable {
         Ok(id)
     }
 
+    pub fn declare_symbol_overwrite(
+        &mut self,
+        name: impl Into<String>,
+        kind: SymbolKind,
+        scope_id: ScopeId,
+        function_id: Option<FunctionId>,
+        declared_at: Option<MultilinePosition>,
+    ) -> SymbolId {
+        let name = name.into();
+
+        let id = self.next_symbol_id;
+        self.next_symbol_id += 1;
+
+        let label = Self::make_symbol_label(kind, &name, id);
+
+        let symbol = Symbol {
+            id,
+            name: name.clone(),
+            kind,
+            scope_id,
+            function_id,
+            label,
+            declared_at,
+        };
+
+        self.symbols.push(symbol);
+        self.scopes[scope_id].symbols_by_name.insert(name, id);
+
+        if let Some(function_id) = function_id {
+            self.attach_symbol_to_function(function_id, id, kind)
+                .unwrap();
+        }
+
+        id
+    }
+
     fn attach_symbol_to_function(
         &mut self,
         function_id: FunctionId,

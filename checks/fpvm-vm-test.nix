@@ -32,16 +32,26 @@ pkgs.runCommand "fpvm-vm-test" { nativeBuildInputs = [ fpvm ]; } ''
       continue
     fi
 
+    if [ "$(head -c 1 "$bytecode")" = "[" ]; then
+      echo "FAIL $name (codegen produced errors)"
+      cat "$bytecode"
+      failed=1
+      continue
+    fi
+
     result=$(fpvm "$bytecode" 2>&1 || true)
 
-    if diff -q <(echo "$result") "$golden" > /dev/null 2>&1; then
+    actual=$(printf '%s' "$result" | sed 's/[[:space:]]*$//')
+    expected=$(sed 's/[[:space:]]*$//' "$golden")
+    if [ "$actual" = "$expected" ]; then
       echo "PASS $name"
     else
       echo "FAIL $name"
       echo "--- expected ---"
       cat "$golden"
       echo "--- actual ---"
-      echo "$result"
+      printf '%s' "$result"
+      echo ""
       echo "---"
       failed=1
     fi
