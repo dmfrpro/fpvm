@@ -138,19 +138,13 @@ impl SymbolTableBuilder {
             return;
         };
 
-        let function_symbol_id = match self.table.declare_symbol(
+        let function_symbol_id = self.table.declare_symbol_overwrite(
             name,
             SymbolKind::Function,
             self.current_scope(),
             Some(self.current_function()),
             Some(name_node.span.clone()),
-        ) {
-            Ok(id) => id,
-            Err(error) => {
-                self.push_error(error);
-                return;
-            }
-        };
+        );
 
         let function_label = self
             .table

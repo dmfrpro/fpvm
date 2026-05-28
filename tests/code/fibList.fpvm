@@ -1,0 +1,24 @@
+(func fib (n) (
+    cond (lesseq n 2) (return 1)
+        (
+            return ( plus (fib (minus n 1)) (fib (minus n 2)) )    
+        )
+    )
+)
+
+(func length_ (lst) 
+    (cond (isnull lst) (return 0)
+        (cond (isnull (head lst)) (return 0)
+            (return (plus 1 (length_ (tail lst))))
+        )
+    )
+)
+
+(setq arr '())
+(setq nElems 10)
+
+(while (less (length_ arr) nElems)
+    (setq arr (cons (fib (plus 1 (length_ arr))) arr))
+)
+
+arr

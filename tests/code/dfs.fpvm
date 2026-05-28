@@ -1,0 +1,63 @@
+(func setElem (lst index value) 
+    (cond (equal index 0) (return (cons value (tail lst)))
+        (cond (isnull lst) (return value)
+            (return (cons (head lst) (setElem (tail lst) (minus index 1) value) ) )
+        )
+    )
+)
+
+(func getElem (lst index)
+    (cond (equal index 0) (return (head lst))
+        (cond (isnull lst) (return null)
+            (getElem (tail lst) (minus index 1))
+        )
+    )
+)
+
+(func length_ (lst)
+    (cond (isnull lst) (return 0)
+        (cond (isnull (head lst)) (return 0)
+            (return (plus 1 (length_ (tail lst))))
+        )
+    )
+)
+
+(func dfs (map parentIndex currentIndex visited)
+    (return (prog (result index) (
+            (cond (getElem visited currentIndex) (return true))
+            (setq result false)
+            (setq index 0)
+            
+            (setq visited (setElem visited currentIndex true))
+            (while (less index (length_ map))
+                (cond (or (equal parentIndex index) (equal 0 (getElem (getElem map currentIndex) index))) (setq index (plus index 1))
+                    (prog () (
+                        (setq result (or result (dfs map currentIndex index visited)))
+                        (setq index (plus index 1))
+                    ))
+                )
+            )
+            (return result)
+        )
+    ))
+)
+
+(setq withoutCycles
+    '(
+        '(0 1 0)
+        '(1 0 1)
+        '(0 1 0)
+    )
+)
+
+(dfs withoutCycles 0 0 '(false false false))
+
+(setq withCycle
+    '(
+        '(0 1 1)
+        '(1 0 1)
+        '(1 1 0)
+    )
+)
+
+(dfs withCycle 0 0 '(false false false))

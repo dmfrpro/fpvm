@@ -1,0 +1,15 @@
+(func tuple (first second) (lambda (res) (res first second)))
+
+(func first (x y) x)
+
+(func second (x y) y)
+
+(setq testtuple (tuple 1 true))
+(testtuple first)
+(testtuple second)
+
+(setq testtriple (tuple 1.4 (tuple 1 2)))
+(testtriple first)
+(testtriple second)
+((testtriple second) first)
+((testtriple second) second)

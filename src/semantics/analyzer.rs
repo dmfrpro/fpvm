@@ -52,7 +52,6 @@ impl SemanticAnalyzer {
                     SymbolInfo {
                         defined_at: MultilinePosition::default(),
                         kind: SymbolKind::Function,
-                        is_prog_local: false,
                     },
                 )
                 .ok();
@@ -96,7 +95,6 @@ impl SemanticAnalyzer {
                         let info = SymbolInfo {
                             defined_at: local.span.clone(),
                             kind: SymbolKind::Variable,
-                            is_prog_local: true,
                         };
                         if let Err(existing) = self.symbol_table.insert(name.clone(), info) {
                             self.error(
@@ -122,7 +120,6 @@ impl SemanticAnalyzer {
                         let info = SymbolInfo {
                             defined_at: param.span.clone(),
                             kind: SymbolKind::Parameter,
-                            is_prog_local: false,
                         };
                         if let Err(existing) = self.symbol_table.insert(name.clone(), info) {
                             self.error(
@@ -179,25 +176,11 @@ impl SemanticAnalyzer {
             }
             NodeKind::SetqNode(id_node, expr) => {
                 if let NodeKind::Identifier(name) = &id_node.kind {
-                    if let Some(existing) = self.symbol_table.current_scope().get(name) {
-                        if !existing.is_prog_local {
-                            self.error(
-                                SemanticErrorKind::DuplicateDefinition(name.clone()),
-                                id_node.span.clone(),
-                                Some(format!(
-                                    "variable '{}' already defined at {}",
-                                    name, existing.defined_at
-                                )),
-                            );
-                        }
-                    } else {
-                        let info = SymbolInfo {
-                            defined_at: id_node.span.clone(),
-                            kind: SymbolKind::Variable,
-                            is_prog_local: false,
-                        };
-                        self.symbol_table.insert(name.clone(), info).ok();
-                    }
+                    let info = SymbolInfo {
+                        defined_at: id_node.span.clone(),
+                        kind: SymbolKind::Variable,
+                    };
+                    self.symbol_table.update_or_insert(name.clone(), info);
                     self.visit_node(expr);
                 } else {
                     self.error(
@@ -213,18 +196,8 @@ impl SemanticAnalyzer {
                     let info = SymbolInfo {
                         defined_at: name_node.span.clone(),
                         kind: SymbolKind::Function,
-                        is_prog_local: false,
                     };
-                    if let Err(existing) = self.symbol_table.insert(fname.clone(), info) {
-                        self.error(
-                            SemanticErrorKind::DuplicateDefinition(fname.clone()),
-                            name_node.span.clone(),
-                            Some(format!(
-                                "function '{}' already defined at {}",
-                                fname, existing.defined_at
-                            )),
-                        );
-                    }
+                    self.symbol_table.update_or_insert(fname.clone(), info);
                 } else {
                     self.error(
                         SemanticErrorKind::InvalidFuncName,
