@@ -92,7 +92,14 @@ fn compile(input_file: &PathBuf, verbose: bool) -> BytecodeProgram {
 
     if verbose {
         let output_path = file_dir.join(format!("{file_stem}.lexer"));
-        fs::write(&output_path, format!("{tokens:#?}\n")).unwrap_or_else(|e| {
+
+        let mut text = String::new();
+
+        for token in &tokens {
+            text.push_str(&format!("{token}\n"));
+        }
+
+        fs::write(&output_path, text).unwrap_or_else(|e| {
             panic!("cannot write {}: {e}", output_path.display());
         });
     }
@@ -109,7 +116,7 @@ fn compile(input_file: &PathBuf, verbose: bool) -> BytecodeProgram {
 
     if verbose {
         let output_path = file_dir.join(format!("{file_stem}.ast"));
-        fs::write(&output_path, format!("{ast:#?}\n")).unwrap_or_else(|e| {
+        fs::write(&output_path, format!("{ast}\n")).unwrap_or_else(|e| {
             panic!("cannot write {}: {e}", output_path.display());
         });
     }
@@ -125,17 +132,11 @@ fn compile(input_file: &PathBuf, verbose: bool) -> BytecodeProgram {
     };
 
     if verbose {
-        let semantic_output_path = file_dir.join(format!("{file_stem}.semantic"));
-
-        fs::write(&semantic_output_path, format!("{checked_program:#?}\n")).unwrap_or_else(|e| {
-            panic!("cannot write {}: {e}", semantic_output_path.display());
-        });
-
         let symbol_table_output_path = file_dir.join(format!("{file_stem}.symbol_table"));
 
         fs::write(
             &symbol_table_output_path,
-            format!("{:#?}\n", &checked_program.symbol_table),
+            format!("{}\n", &checked_program.symbol_table),
         )
         .unwrap_or_else(|e| {
             panic!("cannot write {}: {e}", symbol_table_output_path.display());
